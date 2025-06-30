@@ -313,7 +313,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -396,12 +396,7 @@
             <File>
               <FileName>menu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\menu.c</FilePath>
-            </File>
-            <File>
-              <FileName>menu.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\menu.h</FilePath>
+              <FilePath>..\user\src\menu.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -412,6 +407,11 @@
               <FileName>isr.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\isr.h</FilePath>
+            </File>
+            <File>
+              <FileName>menu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\menu.h</FilePath>
             </File>
           </Files>
         </Group>

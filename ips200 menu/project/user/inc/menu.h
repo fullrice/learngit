@@ -4,10 +4,10 @@
 #include "zf_common_headfile.h"
 /*宏定义*/
 //按键设置
-#define key_enter  1
-#define key_return 0 
-#define key_down 3 //K2
-#define key_up 7 //K1
+#define key_enter  (E2)
+#define key_return (E3) 
+#define key_down (E4) //K2
+#define key_up (E5) //K1
 //#define key_add 8//K3
 //#define key_sub 2//K4
 

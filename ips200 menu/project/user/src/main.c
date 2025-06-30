@@ -32,10 +32,8 @@
 * 日期              作者                备注
 * 2022-08-10        Teternal            first version
 ********************************************************************************************************************/
-
 #include "zf_common_headfile.h"
-
-
+#include "menu.h"
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
 // 第二步 project->clean  等待下方进度条走完
@@ -47,13 +45,29 @@ int main(void)
 {
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
-
+    gpio_init(E2, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_enter
+    gpio_init(E3, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_return
+    gpio_init(E4, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_down
+    gpio_init(E5, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_up
+    // 此处编写用户代码 例如外设初始化代码等
+    	ips200_init(IPS200_TYPE_SPI);
     // 此处编写用户代码 例如外设初始化代码等
     
-    // 此处编写用户代码 例如外设初始化代码等
-
     while(1)
     {
+	   /*
+			if(gpio_get_level(key_up) == 0)
+				{   
+					delay_ms(20);
+            if(gpio_get_level(key_up) == 0)
+            {
+                ips200_show_string(0, 0, "UP pressed");
+                while(gpio_get_level(key_up) == 0);
+            }
+						
+				}
+			*/
+			 menu_main();
         // 此处编写需要循环执行的代码
         
         // 此处编写需要循环执行的代码

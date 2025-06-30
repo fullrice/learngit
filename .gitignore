@@ -40,6 +40,14 @@
 *.idb
 *.pdb
 
+#  Keil 
+*.bak
+*.crf
+*.o
+*.axf
+*.hex
+*.bin
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

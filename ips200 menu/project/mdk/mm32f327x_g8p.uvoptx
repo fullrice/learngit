@@ -125,7 +125,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
-          <Name>-X"SEEKFREE CMSIS-DAP V2" -USF-1069682933461 -O206 -S8 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO11 -FD20000000 -FC1000 -FN1 -FF0MM32F3270_512.FLM -FS08000000 -FL080000 -FP0($$Device:MM32F3273G8P$Flash\MM32F3270_512.FLM)</Name>
+          <Name>-X"SEEKFREE CMSIS-DAP V1" -USF-3069120413210 -O206 -S8 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO11 -FD20000000 -FC1000 -FN1 -FF0MM32F3270_512.FLM -FS08000000 -FL080000 -FP0($$Device:MM32F3273G8P$Flash\MM32F3270_512.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -238,20 +238,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\menu.c</PathWithFileName>
+      <PathWithFileName>..\user\src\menu.c</PathWithFileName>
       <FilenameWithoutPath>menu.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>1</GroupNumber>
-      <FileNumber>4</FileNumber>
-      <FileType>5</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>.\menu.h</PathWithFileName>
-      <FilenameWithoutPath>menu.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -265,13 +253,25 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>2</GroupNumber>
-      <FileNumber>5</FileNumber>
+      <FileNumber>4</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\user\inc\isr.h</PathWithFileName>
       <FilenameWithoutPath>isr.h</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>2</GroupNumber>
+      <FileNumber>5</FileNumber>
+      <FileType>5</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\user\inc\menu.h</PathWithFileName>
+      <FilenameWithoutPath>menu.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
