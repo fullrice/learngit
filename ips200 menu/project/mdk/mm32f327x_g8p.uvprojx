@@ -398,6 +398,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\menu.c</FilePath>
             </File>
+            <File>
+              <FileName>image.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\image.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -412,6 +417,11 @@
               <FileName>menu.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\menu.h</FilePath>
+            </File>
+            <File>
+              <FileName>image.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\image.h</FilePath>
             </File>
           </Files>
         </Group>

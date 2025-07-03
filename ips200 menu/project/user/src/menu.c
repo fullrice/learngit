@@ -98,6 +98,10 @@ void Menu_show_1()//1
 void test1()//21
 { 
    key_action();
+	 flash_read_page_to_buffer(10, 1);  
+	 kp= flash_union_buffer[0].float_type;
+	 ki= flash_union_buffer[1].float_type;
+	 kd= flash_union_buffer[2].float_type;
    lcd_showstr(0,arrow,"->");
    lcd_showfloat(20,0, kp, 5, 2);
 	 lcd_showfloat(20,20, ki, 5, 2);
@@ -111,11 +115,20 @@ void test1()//21
 		
 			switch(arrow)
 			{
-				case 0:kp++;break;
-				case 20:ki++;break;			
-				case 40:kd++;break;
+				case 0:kp+=0.1;break;
+				case 20:ki+=0.1;break;			
+				case 40:kd+=0.1;break;
 				break;
 			}
+			kp = (kp >= 5) ? 1.0:kp;
+	   	ki = (ki >= 5) ? 2.0: ki;
+		  kd = (kd >= 5) ? 3.0: kd;
+			flash_buffer_clear();
+		  flash_union_buffer[0].float_type  =kp;         
+		  flash_union_buffer[1].float_type  = ki;      
+      flash_union_buffer[2].float_type  = kd;    
+			flash_erase_page(10, 1);
+			flash_write_page_from_buffer(10, 1);        // 向指定 Flash 扇区的页码写入缓冲区数据			
 			switch((arrow)+20)//换页
 			{
 				case 80:page=214;arrow=0;break;
@@ -131,6 +144,7 @@ void test1()//21
 		kp = (kp >= 5) ?  1.0:kp;
 		ki = (ki >= 5) ? 2.0: ki;
 		kd = (kd >= 5) ? 3.0: kd;
+		
 		/*
 		I_count1 = (I_count1 >= 5) ? 1 : I_count1;
 		I_count2 = (I_count2 >= 5) ? 1 : I_count2;
