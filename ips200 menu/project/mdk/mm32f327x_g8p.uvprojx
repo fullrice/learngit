@@ -403,6 +403,16 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\image.c</FilePath>
             </File>
+            <File>
+              <FileName>motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>test.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\src\test.txt</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -422,6 +432,11 @@
               <FileName>image.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\image.h</FilePath>
+            </File>
+            <File>
+              <FileName>motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\motor.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -712,14 +727,14 @@
               <FilePath>..\..\libraries\zf_device\zf_device_bluetooth_ch9141.h</FilePath>
             </File>
             <File>
-              <FileName>zf_device_camera.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\libraries\zf_device\zf_device_camera.c</FilePath>
-            </File>
-            <File>
               <FileName>zf_device_camera.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\libraries\zf_device\zf_device_camera.h</FilePath>
+            </File>
+            <File>
+              <FileName>zf_device_camera.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\libraries\zf_device\zf_device_camera.c</FilePath>
             </File>
             <File>
               <FileName>zf_device_config.h</FileName>

@@ -17,6 +17,8 @@
 #define delay_ms(x)     system_delay_ms (x);
 #define lcd_showstr(x, y,dat)     ips200_show_string(x, y, dat)
 #define lcd_showfloat(x, y, dat, num,pointnum)       ips200_show_float(x, y, dat, num,pointnum)
+#define lcd_showint(x, y, dat, num)         ips200_show_int(x, y, dat, num)
 void menu_main();
 void Menu_show_1();
+
 #endif

@@ -1154,3 +1154,6 @@ void ips200_init (ips200_type_enum type_select)
     ips200_clear();                                                             // 初始化为白屏
     ips200_debug_init();
 }
+
+
+

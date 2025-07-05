@@ -1,0 +1,187 @@
+7.5
+//	ips200_clear();
+		//	memcpy(image_copy, mt9v03x_image, MT9V03X_H*MT9V03X_W);
+		 //	ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+		//	 ips200_show_gray_image(0, 200, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+		//	 mt9v03x_finish_flag=0;		
+			/*
+			 if(mt9v03x_finish_flag)
+			 {
+				  uint32 start_time =timer_get (TIM_3);
+			    Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+				  Image_Binarization(Threshold);//图像二值化
+				  uint32 otsu_time = timer_get (TIM_3) - start_time;
+				  uint32 start_time2 =timer_get (TIM_3);
+				 // lq_sobelAutoThreshold(image_copy,image_copy_two_value);
+			   adaptiveThreshold((uint8 *)image_copy, (uint8 *)image_copy_two_value, MT9V03X_W, MT9V03X_H, 13, 10);
+					uint32 otsu_time2 = timer_get (TIM_3) - start_time;
+				 ips200_show_uint (0, 300, otsu_time, 5);
+			//   ips200_show_uint (60, 300, otsu_time2, 5);
+          mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+			 }
+			
+			 else{}
+			 */
+		/*	
+			if(mt9v03x_finish_flag)
+			 {
+				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+				  Image_Binarization(Threshold);//图像二值化
+				  adaptiveThreshold((uint8 *)image_copy, (uint8 *)image_copy_two_value, MT9V03X_W, MT9V03X_H, 13, 10);
+			   // Longest_White_Column();
+				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				 }
+			 else{}
+				 */
+			//	 Longest_White_Column();
+			/*Longest_White_Column();
+				 if(Threshold>=160)//guopu
+				 {
+					  uint16 temp;
+					  temp=512+(160-Threshold)*20;
+				     mt9v03x_set_exposure_time(temp);
+				 }
+				*/ 
+		 //  if(mt9v03x_finish_flag)
+			// {
+			//	 Threshold=Distributed_Otsu_Threshold((uint8 *)image_copy, MT9V03X_W, MT9V03X_H);
+			   // Threshold=My_Adapt_Threshold((uint8 *)image_copy,MT9V03X_W, MT9V03X_H);
+				 // Image_Binarization2(image_copy,image_copy_two_value, MT9V03X_W,MT9V03X_H, Threshold);
+				// lq_sobelAutoThreshold(image_copy,image_copy_two_value);
+				//  Partitioned_Otsu_Binarization(image_copy,image_copy_two_value, MT9V03X_W,MT9V03X_H);
+      //    mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+		//	 }
+		//	 else{}
+          Motor_Right(10);
+					Motor_Left(10);
+					ips200_show_int(50, 100, 20, 3);
+	       ips200_show_int(150, 100, 20, 3);
+				 speed_mps1 = encoder1/1024*10;  // 假设 encoder1 是左电机1s转的圈数
+	       speed_mps2 = encoder2/1024*10;  // 假设 encoder1 是左电机
+        	ips200_show_float(50, 150, -speed_mps2, 3,3);
+	       ips200_show_float(150, 150, speed_mps1, 3,3);
+    
+			//  delay_ms(20); 
+			// ips200_show_uint (0, 300, a, 5);
+		//	 a=a+1;
+		//	 ips200_show_uint (30, 300, otsu_time2, 5);
+		// 	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			//	ips200_clear();
+			//	delay_ms(20); 
+			//	Draw_Track_Boundary();
+		//		 ips200_show_gray_image(0, 180, (const uint8 *)image_copy_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+				//  mt9v03x_finish_flag=0;
+		//	 menu_main();
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		void motor()//21
+{ 
+   key_action();
+	 flash_read_page_to_buffer(10, 1);  
+	 my_control.P_SPEED= flash_union_buffer[0].float_type;
+	 my_control.I_SPEED= flash_union_buffer[1].float_type;
+	// kd= flash_union_buffer[2].float_type;
+   lcd_showstr(0,arrow,"->");
+   lcd_showfloat(20,0, my_control.P_SPEED, 5, 2);
+	 lcd_showfloat(20,20, my_control.I_SPEED, 5, 2);
+	 lcd_showstr(20,40,"speed_show");
+	// lcd_showfloat(20,60, my_control.encoder2, 5, 2);
+//	 lcd_showfloat(20,40, kd, 5, 2);
+	 //lcd_showfloat(20,80, I_count1, 5, 2);
+ //  lcd_showstr(20,60,"test3");
+		if(gpio_get_level(key_enter)== 0)
+    {
+        delay_ms(300);
+        lcd_clear();
+		
+			switch(arrow)
+			{
+				case 0:kp+=0.1;break;
+				case 20:ki+=0.1;break;			
+				case 40:kd+=0.1;break;
+				break;
+			}
+			kp = (kp >= 5) ? 1.0:kp;
+	   	ki = (ki >= 5) ? 2.0: ki;
+		  kd = (kd >= 5) ? 3.0: kd;
+			flash_buffer_clear();
+		  flash_union_buffer[0].float_type  =kp;         
+		  flash_union_buffer[1].float_type  = ki;      
+          flash_union_buffer[2].float_type  = kd;    
+			flash_erase_page(10, 1);
+			flash_write_page_from_buffer(10, 1);        // 向指定 Flash 扇区的页码写入缓冲区数据			
+			switch((arrow)+20)//换页
+			{
+				case 80:page=214;arrow=0;break;
+			}	 
+    }
+		if(gpio_get_level(key_return)== 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        page=1;
+    }
+		
+		kp = (kp >= 5) ?  1.0:kp;
+		ki = (ki >= 5) ? 2.0: ki;
+		kd = (kd >= 5) ? 3.0: kd;
+		
+		/*
+		I_count1 = (I_count1 >= 5) ? 1 : I_count1;
+		I_count2 = (I_count2 >= 5) ? 1 : I_count2;
+		I_count3 = (I_count3 >= 5) ? 1 : I_count3;
+	  */
+
+}
+
+void test3()//214
+{
+  key_action();
+   lcd_showstr(0,arrow,"->");
+	 lcd_showstr(20,0,"Hello");
+	 lcd_showstr(20,20,"Bye");
+	 if(gpio_get_level(key_return)== 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        page=21;
+    }
+
+}
+
+void test2()//22
+{
+   key_action();
+   lcd_showstr(0,arrow,"->");
+	 lcd_showstr(20,0,"olleh");
+	 lcd_showstr(20,20,"eyb");
+	 if(gpio_get_level(key_return)== 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        page=1;
+    }
+
+
+
+
+}
