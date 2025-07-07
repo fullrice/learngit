@@ -14,7 +14,7 @@ typedef struct
 {
     // 二值化后的图像数组
     uint8 image_two_value[MT9V03X_H][MT9V03X_W];
-
+    uint8 maze_display[MT9V03X_H][MT9V03X_W];
     // 数组变量
     volatile int Left_Line[MT9V03X_H]; //左边线数组
 		volatile int Right_Line[MT9V03X_H];//右边线数组
@@ -35,7 +35,13 @@ typedef struct
     int Longest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
     int Left_Lost_Flag[MT9V03X_H];     // 左丢线标记（1=丢线，0=正常）
     int Right_Lost_Flag[MT9V03X_H];    // 右丢线标记（1=丢线，0=正常）
-
+    int stepl;
+		int stepr;
+		int ptsl[1000][2];
+		int ptsr[340][2];
+		int start_x_l;
+		int start_x_r;
+		int start_y;
     // 标准赛道宽度（可根据实际需求初始化）
     const uint8 Standard_Road_Wide[MT9V03X_H]; 
 } Image;
@@ -53,5 +59,9 @@ void lq_sobelAutoThreshold (unsigned char imageIn[MT9V03X_H][MT9V03X_W], unsigne
 void Draw_Track_Boundary();
 void Longest_White_Column();
 void adaptiveThreshold(uint8_t* img_data, uint8_t* output_data, int width, int height, int block, uint8_t clip_value);
-
+void maze_left(int block_size, int clip_value,int x, int y, int pts[][2]);
+void maze_right(int block_size, int clip_value, int x, int y, int pts[][2]);
+void mark_path(int pts[][2], int num_points);
+void find_xy();
+void find_xy_enhanced() ;
 #endif

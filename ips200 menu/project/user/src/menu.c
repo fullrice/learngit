@@ -101,14 +101,31 @@ void Menu_show_1()//1
 	 
     }
 }
+void flash_read_speed()
+{
+   flash_read_page_to_buffer(10,1);  
+   my_control.P_SPEED= flash_union_buffer[0].float_type;
+   my_control.I_SPEED= flash_union_buffer[1].float_type;
+}
+
+void flash_write_speed()
+{
+    flash_buffer_clear();
+		flash_union_buffer[0].float_type  =my_control.P_SPEED;  
+	  flash_union_buffer[1].float_type  =my_control.I_SPEED;  
+		flash_erase_page(10,1);
+	  flash_write_page_from_buffer(10,1);        // 向指定 Flash 扇区的页码写入缓冲区数据
+
+}
 void motor()//21
 { 
    key_action();
-	 flash_read_page_to_buffer(10, 1);  
-	 my_control.P_SPEED= flash_union_buffer[0].float_type;
-	// flash_buffer_clear();
-	// flash_read_page_to_buffer(11, 1);  
-//	 my_control.I_SPEED= flash_union_buffer[1].float_type;
+	flash_read_speed();
+	// flash_read_page_to_buffer(10, 1);  
+//	 my_control.P_SPEED= flash_union_buffer[0].float_type;
+//	 flash_buffer_clear();
+//	 flash_read_page_to_buffer(11, 1);  
+//	 my_control.I_SPEED= flash_union_buffer[0].float_type;
 	// kd= flash_union_buffer[2].float_type;
    lcd_showstr(0,arrow,"->");
 	 lcd_showstr(20,0,"speed_p_show:");
@@ -167,10 +184,7 @@ void speed_p_show()//211
         lcd_clear();
         page=21;
     }
-		flash_buffer_clear();
-		flash_union_buffer[0].float_type  =my_control.P_SPEED;  
-		flash_erase_page(10, 1);
-	  flash_write_page_from_buffer(10, 1);        // 向指定 Flash 扇区的页码写入缓冲区数据			
+		flash_write_speed();
 
 }
 void speed_i_show()//212
@@ -197,11 +211,7 @@ void speed_i_show()//212
         lcd_clear();
         page=21;
     }
-		flash_buffer_clear();
-		flash_union_buffer[0].float_type  =my_control.I_SPEED;  
-		flash_erase_page(11, 1);
-	  flash_write_page_from_buffer(11, 1);        // 向指定 Flash 扇区的页码写入缓冲区数据			
-
+		flash_write_speed();
 }
 void speed_show()//213
 {  

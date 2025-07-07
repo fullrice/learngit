@@ -185,3 +185,91 @@ void test2()//22
 
 
 }
+
+
+
+
+7.10
+
+void all_init(void)
+{
+  //  timer_init(TIM_1, TIMER_US);
+    clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
+    debug_init();     
+	//  timer_init(TIM_3, TIMER_US);
+	//  timer_start(TIM_3); 
+	  gpio_init(DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);                            // GPIO 初始化为输出 默认上拉输出高
+    pwm_init(PWM_L, 17000, 0);                                                  // PWM 通道初始化频率 17KHz 占空比初始为 0    
+    gpio_init(DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);                            // GPIO 初始化为输出 默认上拉输出高
+    pwm_init(PWM_R, 17000, 0);         
+	 encoder_quad_init(TIM3_ENCODER, TIM3_ENCODER_CH1_B4, TIM3_ENCODER_CH2_B5);
+	 encoder_quad_init(TIM4_ENCODER, TIM4_ENCODER_CH1_B6, TIM4_ENCODER_CH2_B7);	// PWM 通道初始化频率 17KHz 占空比初始为 0
+	// flash_read_page(FLASH_SECTOR, FLASH_PAGE, &b, 1);
+		system_delay_ms(300);	// 初始化默认 Debug UART
+    gpio_init(E2, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_enter
+    gpio_init(E3, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_return
+    gpio_init(E4, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_down
+    gpio_init(E5, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_up
+    // 此处编写用户代码 例如外设初始化代码等
+    	ips200_init(IPS200_TYPE_SPI);
+  //	 pit_ms_init(TIM5_PIT, 10);//
+//	 interrupt_set_priority(TIM5_IRQn, 1);
+//   	 pit_ms_init(TIM2_PIT, 100);
+/*
+			 while(1)
+				{
+						if(mt9v03x_init())
+						{
+								ips200_show_string(0, 16, "mt9v03x reinit.");
+						}
+						else
+						{
+								break;
+						}
+						system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
+				}
+				*/
+    ips200_show_string(0, 16, "init success.");
+  	system_delay_ms(1000);  
+    ips200_clear();
+}
+
+while(1)
+    {
+		// 	  memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
+	//		ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			  if(mt9v03x_finish_flag)
+			 { 
+				  find_xy();
+				// find_xy_enhanced();
+				  maze_left(3, 3,my_image.start_x_l+1, MT9V03X_H-20, my_image.ptsl);
+		//		 ips200_show_int(50, 250, my_image.start_x_l, 5);
+	//			 ips200_show_int(100, 250, my_image.start_x_r, 5);
+				  maze_right(3, 3,my_image.start_x_r-1, MT9V03X_H-20, my_image.ptsr);
+		 //  	   ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			   // Longest_White_Column();
+				   mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				 }
+			 else{}
+		//		 ips200_show_int(50, 50, my_image.stepl, 5);
+			//	  delay_ms(20); 
+			for (int i = 0; i < my_image.stepl; i++) 
+				 {
+					int x = my_image.ptsl[i][0];
+		//		   ips200_show_int(50, 50,x, 5);
+		//			 delay_ms(20); 
+			}
+				 
+				 memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
+				 mark_path(my_image.ptsl,my_image.stepl);
+				 mark_path(my_image.ptsr,my_image.stepr);
+				 ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+				 ips200_show_gray_image(0, 180, (const uint8 *)my_image.maze_display, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			 delay_ms(20); 
+		    // Motor_Right(1000);
+				//	Motor_Left(1000);
+			   //menu_main();
+        // 此处编写需要循环执行的代码
+        
+        // 此处编写需要循环执行的代码
+    }

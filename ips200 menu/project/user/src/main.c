@@ -54,6 +54,7 @@ float speed_mps1;
 float speed_mps2; 
 #define FLASH_SECTOR    127     // 使用最后一个扇区
 #define FLASH_PAGE      0       // 使用第0页
+
 void all_init(void)
 {
   //  timer_init(TIM_1, TIMER_US);
@@ -75,9 +76,10 @@ void all_init(void)
     gpio_init(E5, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_up
     // 此处编写用户代码 例如外设初始化代码等
     	ips200_init(IPS200_TYPE_SPI);
-  //	 pit_ms_init(TIM5_PIT, 10);//
+   // 	 pit_ms_init(TIM5_PIT, 10);//
 //	 interrupt_set_priority(TIM5_IRQn, 1);
-   	 pit_ms_init(TIM2_PIT, 100);
+    //	 pit_ms_init(TIM2_PIT, 100);
+			 mt9v03x_init();
 /*
 			 while(1)
 				{
@@ -98,7 +100,7 @@ void all_init(void)
 }
 
 
-
+int count=0;
  //uint32   otsu_time = 0;
 // uint32   otsu_time2 = 0;
 int main(void)
@@ -108,14 +110,46 @@ int main(void)
 	 
     // 此处编写用户代码 例如外设初始化代码等
 	  //修改字体
+	  //memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
     //ips200_set_font(IPS200_8X16_FONT);
     while(1)
     {
-		     Motor_Right(1000);
-					Motor_Left(1000);
-			 menu_main();
+		// 	  memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
+	//		ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			     if(mt9v03x_finish_flag)
+			   { 
+				   find_xy(5);
+				 // find_xy_enhanced();
+				   maze_left(3, 3,my_image.start_x_l+1, MT9V03X_H-20, my_image.ptsl);
+		//		 ips200_show_int(50, 250, my_image.start_x_l, 5);
+	//			 ips200_show_int(100, 250, my_image.start_x_r, 5);
+				   maze_right(3, 3,my_image.start_x_r-1, MT9V03X_H-20, my_image.ptsr);
+		 //  	   ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			   // Longest_White_Column();
+				   mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				 }
+				 ips200_show_int(0, 130, my_image.start_x_l, 5);
+				 ips200_show_int(0, 150, my_image.start_x_r, 5);
+			//	  delay_ms(20); 
+			// menu_main();
+		//		   ips200_show_int(50, 50,x, 5);
+		//			 delay_ms(20); 
+		  
+				 				 memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
+								 mark_path(my_image.ptsl,my_image.stepl);
+								 mark_path(my_image.ptsr,my_image.stepr);
+								 ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			//	         ips200_show_gray_image(0, 170,my_image.image_two_value[MT9V03X_H-20], MT9V03X_W, 1, MT9V03X_W, 1, 0);
+								 ips200_show_gray_image(0, 180, (const uint8 *)my_image.maze_display, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+				
+		//	  delay_ms(20); 
+			
+		    // Motor_Right(1000);
+				//	Motor_Left(1000);
+			
         // 此处编写需要循环执行的代码
         
         // 此处编写需要循环执行的代码
-    }
+    
+	}
 }
