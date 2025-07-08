@@ -37,13 +37,20 @@ typedef struct
     int Right_Lost_Flag[MT9V03X_H];    // 右丢线标记（1=丢线，0=正常）
     int stepl;
 		int stepr;
-		int ptsl[1000][2];
-		int ptsr[340][2];
+		int ptsl[300][2];
+		int ptsr[300][2];
 		int start_x_l;
 		int start_x_r;
 		int start_y;
     // 标准赛道宽度（可根据实际需求初始化）
     const uint8 Standard_Road_Wide[MT9V03X_H]; 
+		
+		//十字
+		volatile int Cross_Flag;
+		volatile int Left_Down_Find; //十字使用，找到被置行数，没找到就是0
+		volatile int Left_Up_Find;   //四个拐点标志
+		volatile int Right_Down_Find;
+		volatile int Right_Up_Find;
 } Image;
 
 // 声明全局的结构体变量
@@ -64,4 +71,11 @@ void maze_right(int block_size, int clip_value, int x, int y, int pts[][2]);
 void mark_path(int pts[][2], int num_points);
 void find_xy();
 void find_xy_enhanced() ;
+void Left_Add_Line(int x1,int y1,int x2,int y2);
+void Right_Add_Line(int x1,int y1,int x2,int y2);
+void Lengthen_Left_Boundry(int start,int end);
+void Lengthen_Right_Boundry(int start,int end);
+void Find_Down_Point(int start,int end);
+void Find_Up_Point(int start,int end);
+void draw_mid_line();
 #endif

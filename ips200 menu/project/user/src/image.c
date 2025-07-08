@@ -25,7 +25,20 @@ void Image_Binarization(int threshold)//图像二值化
         }
     }
 }
+void draw_mid_line()
+{
+   for(int i=0;i<MT9V03X_H;i++)
+	{
+	   if(my_image.Right_Lost_Flag[i]==0 && my_image.Left_Lost_Flag[i]==0)
+		 {
+		    ips200_draw_point ((my_image.Left_Line[i]+my_image.Right_Line[i])>>1, i, RGB565_RED);
+		 
+		 }
+	
+	}
 
+
+}
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     普通大津求阈值
   @param     image       图像数组
@@ -395,6 +408,195 @@ void Longest_White_Column()//最长白列巡线
         my_image.Road_Wide[i] = my_image.Right_Line[i] - my_image.Left_Line[i];
     }
 }
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左补线
+  @param     补线的起点，终点
+  @return    null
+  Sample     Left_Add_Line(int x1,int y1,int x2,int y2);
+  @note      补的直接是边界，点最好是可信度高的,不要乱补
+-------------------------------------------------------------------------------------------------------------------*/
+void Left_Add_Line(int x1,int y1,int x2,int y2)//左补线,补的是边界
+{
+    int i,max,a1,a2;
+    int hx;
+    if(x1>=MT9V03X_W-1)//起始点位置校正，排除数组越界的可能
+       x1=MT9V03X_W-1;
+    else if(x1<=0)
+        x1=0;
+     if(y1>=MT9V03X_H-1)
+        y1=MT9V03X_H-1;
+     else if(y1<=0)
+        y1=0;
+     if(x2>=MT9V03X_W-1)
+        x2=MT9V03X_W-1;
+     else if(x2<=0)
+             x2=0;
+     if(y2>=MT9V03X_H-1)
+        y2=MT9V03X_H-1;
+     else if(y2<=0)
+             y2=0;
+    a1=y1;
+    a2=y2;
+    if(a1>a2)//坐标互换
+    {
+        max=a1;
+        a1=a2;
+        a2=max;
+    }
+    for(i=a1;i<=a2;i++)//根据斜率补线即可
+    {
+        hx=(i-y1)*(x2-x1)/(y2-y1)+x1;
+        if(hx>=MT9V03X_W)
+            hx=MT9V03X_W;
+        else if(hx<=0)
+            hx=0;
+        my_image.Left_Line[i]=hx;
+				ips200_draw_point (hx, i,RGB565_RED);
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     右补线
+  @param     补线的起点，终点
+  @return    null
+  Sample     Right_Add_Line(int x1,int y1,int x2,int y2);
+  @note      补的直接是边界，点最好是可信度高的，不要乱补
+-------------------------------------------------------------------------------------------------------------------*/
+void Right_Add_Line(int x1,int y1,int x2,int y2)//右补线,补的是边界
+{
+    int i,max,a1,a2;
+    int hx;
+    if(x1>=MT9V03X_W-1)//起始点位置校正，排除数组越界的可能
+       x1=MT9V03X_W-1;
+    else if(x1<=0)
+        x1=0;
+    if(y1>=MT9V03X_H-1)
+        y1=MT9V03X_H-1;
+    else if(y1<=0)
+        y1=0;
+    if(x2>=MT9V03X_W-1)
+        x2=MT9V03X_W-1;
+    else if(x2<=0)
+        x2=0;
+    if(y2>=MT9V03X_H-1)
+        y2=MT9V03X_H-1;
+    else if(y2<=0)
+         y2=0;
+    a1=y1;
+    a2=y2;
+    if(a1>a2)//坐标互换
+    {
+        max=a1;
+        a1=a2;
+        a2=max;
+    }
+    for(i=a1;i<=a2;i++)//根据斜率补线即可
+    {
+        hx=(i-y1)*(x2-x1)/(y2-y1)+x1;
+        if(hx>=MT9V03X_W)
+            hx=MT9V03X_W;
+        else if(hx<=0)
+            hx=0;
+        my_image.Right_Line[i]=hx;
+				ips200_draw_point (hx, i,RGB565_RED);
+    }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左边界延长
+  @param     延长起始行数，延长到某行
+  @return    null
+  Sample     Stop_Detect(void)
+  @note      从起始点向上找5个点，算出斜率，向下延长，直至结束点
+-------------------------------------------------------------------------------------------------------------------*/
+void Lengthen_Left_Boundry(int start,int end)//起始行，终止行即可
+{
+    int i,t;
+    float k=0;
+    if(start>=MT9V03X_H-1)//起始点位置校正，排除数组越界的可能
+        start=MT9V03X_H-1;
+    else if(start<=0)
+        start=0;
+    if(end>=MT9V03X_H-1)
+        end=MT9V03X_H-1;
+    else if(end<=0)
+        end=0;
+    if(end<start)//++访问，坐标互换
+    {
+        t=end;
+        end=start;
+        start=t;
+    }
+
+    if(start<=5)//因为需要在开始点向上找3个点，对于起始点过于靠上，不能做延长，只能直接连线
+    {
+         Left_Add_Line(my_image.Left_Line[start],start,my_image.Left_Line[end],end);
+    }
+
+    else
+    {
+        k=(float)(my_image.Left_Line[start]-my_image.Left_Line[start-4])/5.0;//这里的k是1/斜率
+        for(i=start;i<=end;i++)
+        {
+            my_image.Left_Line[i]=(int)(i-start)*k+my_image.Left_Line[start];//(x=(y-y1)*k+x1),点斜式变形
+            if(my_image.Left_Line[i]>=MT9V03X_W-1)
+            {
+                my_image.Left_Line[i]=MT9V03X_W-1;
+            }
+            else if(my_image.Left_Line[i]<=0)
+            {
+                my_image.Left_Line[i]=0;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     右左边界延长
+  @param     延长起始行数，延长到某行
+  @return    null
+  Sample     Stop_Detect(void)
+  @note      从起始点向上找3个点，算出斜率，向下延长，直至结束点
+-------------------------------------------------------------------------------------------------------------------*/
+void Lengthen_Right_Boundry(int start,int end)
+{
+    int i,t;
+    float k=0;
+    if(start>=MT9V03X_H-1)//起始点位置校正，排除数组越界的可能
+        start=MT9V03X_H-1;
+    else if(start<=0)
+        start=0;
+    if(end>=MT9V03X_H-1)
+        end=MT9V03X_H-1;
+    else if(end<=0)
+        end=0;
+    if(end<start)//++访问，坐标互换
+    {
+        t=end;
+        end=start;
+        start=t;
+    }
+
+    if(start<=5)//因为需要在开始点向上找3个点，对于起始点过于靠上，不能做延长，只能直接连线
+    {
+        Right_Add_Line(my_image.Right_Line[start],start,my_image.Right_Line[end],end);
+    }
+    else
+    {
+        k=(float)(my_image.Right_Line[start]-my_image.Right_Line[start-4])/5.0;//这里的k是1/斜率
+        for(i=start;i<=end;i++)
+        {
+            my_image.Right_Line[i]=(int)(i-start)*k+my_image.Right_Line[start];//(x=(y-y1)*k+x1),点斜式变形
+            if(my_image.Right_Line[i]>=MT9V03X_W-1)
+            {
+                my_image.Right_Line[i]=MT9V03X_W-1;
+            }
+            else if(my_image.Right_Line[i]<=0)
+            {
+                my_image.Right_Line[i]=0;
+            }
+        }
+    }
+}
 
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     绘制赛道边界图
@@ -449,6 +651,120 @@ void Draw_Track_Boundary()
                            MT9V03X_W, MT9V03X_H, 0);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找下面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Right_Down_Find=0;
+             Left_Down_Find=0;
+  Sample     Find_Down_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Down_Point(int start,int end)
+{
+    int i,t;
+    my_image.Right_Down_Find=0;
+    my_image.Left_Down_Find=0;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start=MT9V03X_H-1-5;
+    if(end<=MT9V03X_H-my_image.Search_Stop_Line)
+        end=MT9V03X_H-my_image.Search_Stop_Line;
+    if(end<=5)
+       end=5;
+    for(i=start;i>=end;i--)
+    {
+        if(my_image.Left_Down_Find==0&&//只找第一个符合条件的点
+           abs(my_image.Left_Line[i]-my_image.Left_Line[i+1])<=5&&//角点的阈值可以更改
+           abs(my_image.Left_Line[i+1]-my_image.Left_Line[i+2])<=5&&
+           abs(my_image.Left_Line[i+2]-my_image.Left_Line[i+3])<=5&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-2])>=8&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-3])>=15&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-4])>=15)
+        {
+            my_image.Left_Down_Find=i;//获取行数即可
+        }
+        if(my_image.Right_Down_Find==0&&//只找第一个符合条件的点
+           abs(my_image.Right_Line[i]-my_image.Right_Line[i+1])<=5&&//角点的阈值可以更改
+           abs(my_image.Right_Line[i+1]-my_image.Right_Line[i+2])<=5&&
+           abs(my_image.Right_Line[i+2]-my_image.Right_Line[i+3])<=5&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i-2])<=-8&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i-3])<=-15&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i-4])<=-15)
+        {
+            my_image.Right_Down_Find=i;
+        }
+        if(my_image.Left_Down_Find!=0&&my_image.Right_Down_Find!=0)//两个找到就退出
+        {
+            break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找上面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Left_Up_Find=0;
+             Right_Up_Find=0;
+  Sample     Find_Up_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Up_Point(int start,int end)
+{
+    int i,t;
+    my_image.Left_Up_Find=0;
+    my_image.Right_Up_Find=0;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(end<=MT9V03X_H-my_image.Search_Stop_Line)
+        end=MT9V03X_H-my_image.Search_Stop_Line;
+    if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
+        end=5;
+    if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start=MT9V03X_H-1-5;
+    for(i=start;i>=end;i--)
+    {
+        if(my_image.Left_Up_Find==0&&//只找第一个符合条件的点
+           abs(my_image.Left_Line[i]-my_image.Left_Line[i-1])<=5&&
+           abs(my_image.Left_Line[i-1]-my_image.Left_Line[i-2])<=5&&
+           abs(my_image.Left_Line[i-2]-my_image.Left_Line[i-3])<=5&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i+2])>=8&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i+3])>=15&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i+4])>=15)
+        {
+            my_image.Left_Up_Find=i;//获取行数即可
+        }
+        if(my_image.Right_Up_Find==0&&//只找第一个符合条件的点
+           abs(my_image.Right_Line[i]-my_image.Right_Line[i-1])<=5&&//下面两行位置差不多
+           abs(my_image.Right_Line[i-1]-my_image.Right_Line[i-2])<=5&&
+           abs(my_image.Right_Line[i-2]-my_image.Right_Line[i-3])<=5&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i+2])<=-8&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i+3])<=-15&&
+              (my_image.Right_Line[i]-my_image.Right_Line[i+4])<=-15)
+        {
+            my_image.Right_Up_Find=i;//获取行数即可
+        }
+        if(my_image.Left_Up_Find!=0&&my_image.Right_Up_Find!=0)//下面两个找到就出去
+        {
+            break;
+        }
+    }
+    if(abs(my_image.Right_Up_Find-my_image.Left_Up_Find)>=30)//纵向撕裂过大，视为误判
+    {
+        my_image.Right_Up_Find=0;
+        my_image.Left_Up_Find=0;
+    }
+} 
 /* 前进方向定义：
  *   0
  * 3   1
@@ -524,7 +840,7 @@ void maze_left(int block_size, int clip_value,int x, int y, int pts[][2])   //, 
 	 my_image.stepl=0;
 	// ips200_show_int(0, 0,dir, 3);
    //step < *num && 
-    while (my_image.stepl<=500 && half < x && x < MT9V03X_W - half - 1 && 
+    while (my_image.stepl<=100 && half < x && x < MT9V03X_W - half - 1 && 
            half < y && y < MT9V03X_H - half - 1 && 
            turn < 4) 
     {
@@ -594,7 +910,7 @@ void maze_right(int block_size, int clip_value, int x, int y, int pts[][2]) {
     int half = block_size / 2;
     int dir = 1, turn = 0;
    my_image.stepr=0;
-    while (my_image.stepr<=500 && half < x && x < MT9V03X_W - half - 1 && 
+    while (my_image.stepr<=100 && half < x && x < MT9V03X_W - half - 1 && 
            half < y && y < MT9V03X_H - half - 1 && 
            turn < 4) {
         // 计算局部阈值
@@ -605,8 +921,9 @@ void maze_right(int block_size, int clip_value, int x, int y, int pts[][2]) {
             }
         }
         local_thres /= block_size * block_size;
+			//	ips200_show_int(40, 130, local_thres, 5);
         local_thres -= clip_value;
-
+     
         // 像素值访问
         int current_value = mt9v03x_image[y][x];
         int front_value = mt9v03x_image[y + dir_front[dir][1]][x + dir_front[dir][0]];
@@ -662,7 +979,7 @@ void mark_path(int pts[][2], int num_points) {
 void find_xy(int offset)
 {
    int startx_l=MT9V03X_W/2;
-	int startx_r=MT9V03X_W/2;
+	 int startx_r=MT9V03X_W/2;
 	 int starty=MT9V03X_H-20;
 	/*
 	while(mt9v03x_image[starty][startx_l]-mt9v03x_image[starty][startx_l-1]<50)
@@ -694,15 +1011,24 @@ void find_xy(int offset)
 		   my_image.image_two_value[starty][i]=255;
 		}
 	}
-	while(mt9v03x_image[starty][startx_l]>thod && startx_l>0)
+	while(my_image.image_two_value[starty][startx_l]==255 && startx_l>0)
 	{
 	   startx_l--;
 	}
 	my_image.start_x_l=startx_l;
-	while(mt9v03x_image[starty][startx_r]>thod && startx_l<MT9V03X_W-5)
+	while(my_image.image_two_value[starty][startx_r]==255 && startx_r<MT9V03X_W-5)
 	{
 	   startx_r++;
 	}
+//	while(mt9v03x_image[starty][startx_l]>100 && startx_l>0)
+//	{
+//	   startx_l--;
+//	}
+//	my_image.start_x_l=startx_l;
+//	while(mt9v03x_image[starty][startx_r]>100 && startx_r<MT9V03X_W-5)
+//	{
+//	   startx_r++;
+//	}
 	my_image.start_x_r=startx_r;
 }
 

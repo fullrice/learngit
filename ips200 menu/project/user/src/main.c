@@ -35,6 +35,7 @@
 #include "zf_common_headfile.h"
 #include "menu.h"
 #include "motor.h"
+#include "control.h"
 #include "image.h"
 #include "isr.h"
 // 打开新的工程或者工程移动了位置务必执行以下操作
@@ -48,107 +49,108 @@ uint32 a=20,b=0;
 uint8 image_copy[MT9V03X_H][MT9V03X_W];
 uint8 image_copy_two_value[MT9V03X_H][MT9V03X_W];//二值化后的原数组
 int Threshold=0;
+int count_2s=0;
+int count_10s=0;
 int32 encoder1;
 int32 encoder2;
 float speed_mps1;
 float speed_mps2; 
 #define FLASH_SECTOR    127     // 使用最后一个扇区
 #define FLASH_PAGE      0       // 使用第0页
-
 void all_init(void)
 {
-  //  timer_init(TIM_1, TIMER_US);
-    clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
-    debug_init();     
-	//  timer_init(TIM_3, TIMER_US);
-	//  timer_start(TIM_3); 
-	  gpio_init(DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);                            // GPIO 初始化为输出 默认上拉输出高
-    pwm_init(PWM_L, 17000, 0);                                                  // PWM 通道初始化频率 17KHz 占空比初始为 0    
-    gpio_init(DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);                            // GPIO 初始化为输出 默认上拉输出高
-    pwm_init(PWM_R, 17000, 0);         
-	 encoder_quad_init(TIM3_ENCODER, TIM3_ENCODER_CH1_B4, TIM3_ENCODER_CH2_B5);
-	 encoder_quad_init(TIM4_ENCODER, TIM4_ENCODER_CH1_B6, TIM4_ENCODER_CH2_B7);	// PWM 通道初始化频率 17KHz 占空比初始为 0
-	// flash_read_page(FLASH_SECTOR, FLASH_PAGE, &b, 1);
-		system_delay_ms(300);	// 初始化默认 Debug UART
-    gpio_init(E2, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_enter
-    gpio_init(E3, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_return
-    gpio_init(E4, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_down
-    gpio_init(E5, GPI, GPIO_HIGH, GPI_PULL_UP);  // key_up
-    // 此处编写用户代码 例如外设初始化代码等
-    	ips200_init(IPS200_TYPE_SPI);
-   // 	 pit_ms_init(TIM5_PIT, 10);//
-//	 interrupt_set_priority(TIM5_IRQn, 1);
-    //	 pit_ms_init(TIM2_PIT, 100);
-			 mt9v03x_init();
-/*
-			 while(1)
-				{
-						if(mt9v03x_init())
-						{
-								ips200_show_string(0, 16, "mt9v03x reinit.");
-						}
-						else
-						{
-								break;
-						}
-						system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
-				}
-				*/
+    //============================ 时钟与调试初始化 ============================//
+    clock_init(SYSTEM_CLOCK_120M);      // 初始化芯片时钟 工作频率为 120MHz
+    debug_init();                       // 初始化默认 Debug UART
+    
+    //=============================== GPIO初始化 ===============================//
+    // 电机方向控制
+    gpio_init(DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // GPIO 初始化为输出 默认上拉输出高
+    gpio_init(DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // GPIO 初始化为输出 默认上拉输出高
+    
+    // 按键输入
+    gpio_init(E2, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_enter
+    gpio_init(E3, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_return
+    gpio_init(E4, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_down
+    gpio_init(E5, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_up
+
+    //============================== PWM初始化 ================================//
+    pwm_init(PWM_L, 17000, 0);         // PWM 通道初始化频率 17KHz 占空比初始为 0    
+    pwm_init(PWM_R, 17000, 0);         // PWM 通道初始化频率 17KHz 占空比初始为 0
+
+    //============================= 编码器初始化 ==============================//
+    /* 编码器接口 */
+    encoder_quad_init(TIM3_ENCODER, TIM3_ENCODER_CH1_B4, TIM3_ENCODER_CH2_B5);
+    encoder_quad_init(TIM4_ENCODER, TIM4_ENCODER_CH1_B6, TIM4_ENCODER_CH2_B7);
+    //  timer_init(TIM_3, TIMER_US);
+    //  timer_start(TIM_3); 
+
+    //============================ 外设模块初始化 =============================//
+    /* 显示屏初始化 */
+    ips200_init(IPS200_TYPE_SPI);
     ips200_show_string(0, 16, "init success.");
-  	system_delay_ms(1000);  
     ips200_clear();
+    
+    /* 摄像头初始化 */
+    mt9v03x_init();
+   
+    /* 定时器初始化（注释状态） */
+    //  timer_init(TIM_1, TIMER_US);
+  //    pit_ms_init(TIM5_PIT, 10);//
+	    /*中断*/			
+	    pit_ms_init(TIM6_PIT, 1);//
+			pit_ms_init(TIM7_PIT, 1);//
+	 		pit_ms_init(TIM2_PIT, 10);//
+    //  interrupt_set_priority(TIM6_IRQn, 1);
+    //  pit_ms_init(TIM2_PIT, 100);
+    
+    /* Flash操作（注释状态） */
+    // flash_read_page(FLASH_SECTOR, FLASH_PAGE, &b, 1);
+
+    //============================= 延时与完成 ===============================//
+    system_delay_ms(300);             // 初始化延时
+   // system_delay_ms(1000);            // 显示延时
 }
 
-
-int count=0;
- //uint32   otsu_time = 0;
-// uint32   otsu_time2 = 0;
+float steer_output;         // 方向环输出（速度修正量）
 int main(void)
 {
-	 
+	  //元素判断放在定时中断当中
     all_init();  
-	 
-    // 此处编写用户代码 例如外设初始化代码等
-	  //修改字体
-	  //memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
-    //ips200_set_font(IPS200_8X16_FONT);
+	//  my_order.go = 1;
+
     while(1)
     {
-		// 	  memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
-	//		ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-			     if(mt9v03x_finish_flag)
-			   { 
-				   find_xy(5);
-				 // find_xy_enhanced();
-				   maze_left(3, 3,my_image.start_x_l+1, MT9V03X_H-20, my_image.ptsl);
-		//		 ips200_show_int(50, 250, my_image.start_x_l, 5);
-	//			 ips200_show_int(100, 250, my_image.start_x_r, 5);
-				   maze_right(3, 3,my_image.start_x_r-1, MT9V03X_H-20, my_image.ptsr);
-		 //  	   ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+       /**/			
+			  if(mt9v03x_finish_flag)
+			 {
+				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+				  Image_Binarization(Threshold);//图像二值化
 			   // Longest_White_Column();
-				   mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
 				 }
-				 ips200_show_int(0, 130, my_image.start_x_l, 5);
-				 ips200_show_int(0, 150, my_image.start_x_r, 5);
-			//	  delay_ms(20); 
-			// menu_main();
-		//		   ips200_show_int(50, 50,x, 5);
-		//			 delay_ms(20); 
-		  
-				 				 memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
-								 mark_path(my_image.ptsl,my_image.stepl);
-								 mark_path(my_image.ptsr,my_image.stepr);
-								 ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-			//	         ips200_show_gray_image(0, 170,my_image.image_two_value[MT9V03X_H-20], MT9V03X_W, 1, MT9V03X_W, 1, 0);
-								 ips200_show_gray_image(0, 180, (const uint8 *)my_image.maze_display, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-				
-		//	  delay_ms(20); 
-			
-		    // Motor_Right(1000);
-				//	Motor_Left(1000);
+			 else{}  
+	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+	  //     draw_mid_line();
+   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+				 Longest_White_Column();
+	   		 my_control.err=Err_Sum(); 
+//    // PD计算（位置式）
+//    steer_output = my_control.P_DIRE * my_control.err + my_control.D_DIRE * (my_control.err  - my_control.last_err);
+//   my_control.last_err  = my_control.err ; // 更新误差
+//       /*image*/			
+//          ips200_show_int(0, 130, my_control.err, 5);
+			//	  ips200_show_float(30, 130, steer_output, 5,3);
+			    menu_main();
+		//     Motor_Right(2000);
+		//			Motor_Left(2000);
 			
         // 此处编写需要循环执行的代码
-        
+//         lcd_showstr(0,40,"speed_l");
+//				 lcd_showstr(0,60,"speed_r");
+		//		 lcd_showint(100,40, my_control.encoderr, 5);
+	//			 lcd_showint(100,60, my_control.encoderl, 5);
+	//			 ips200_show_int(0, 130, my_order.go, 5);
         // 此处编写需要循环执行的代码
     
 	}

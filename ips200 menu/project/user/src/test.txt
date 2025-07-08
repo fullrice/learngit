@@ -273,3 +273,49 @@ while(1)
         
         // 此处编写需要循环执行的代码
     }
+	
+	
+	
+	
+			//maze
+		//	memcpy(image_copy, mt9v03x_image, MT9V03X_H*MT9V03X_W);
+//			     if(mt9v03x_finish_flag)
+//			   { 
+//				    find_xy(0);
+//				//		 count_2s=0;
+//					 
+//		//			 my_image.start_x_r = 120;
+//		//			  my_image.start_x_l =70;
+//				//	 my_image.start_x_l=60;
+//				//	 delay_ms(20); 
+//				 // find_xy_enhanced();
+//				 //  maze_left(3, 3,my_image.start_x_l+1, MT9V03X_H-20, my_image.ptsl);
+//		 //		 ips200_show_int(50, 250, my_image.start_x_l, 5);
+//	   //			 ips200_show_int(100, 250, my_image.start_x_r, 5);
+//					 memset(my_image.ptsl,255, sizeof(my_image.ptsl)); 
+//			     memset(my_image.ptsr,255, sizeof(my_image.ptsr));
+//			  		  maze_left(3, 0,my_image.start_x_l+1, MT9V03X_H-4, my_image.ptsl);
+//				     maze_right(3, 0,my_image.start_x_r-1, MT9V03X_H-4, my_image.ptsr);
+//			//		 delay_ms(20); 
+//		 //  	   ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//			   // Longest_White_Column();
+//				//	Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+//				//  Image_Binarization(Threshold);//图像二值化				 
+//				   mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+//				 }
+//				// Longest_White_Column();
+//			//	 Draw_Track_Boundary();
+//				 ips200_show_int(0, 130, my_image.start_x_l, 5);
+//				 ips200_show_int(0, 150, my_image.start_x_r, 5);
+//				  delay_ms(20); 
+//			   // menu_main();
+//		  //		delay_ms(20); 
+//		  
+//				 				 memset(my_image.maze_display, 255, sizeof(my_image.maze_display)); 
+//								 mark_path(my_image.ptsl,my_image.stepl);
+//				       //delay_ms(20); 
+//								 mark_path(my_image.ptsr,my_image.stepr);
+//							 ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//				         ips200_show_gray_image(0, 170,my_image.image_two_value[MT9V03X_H-20], MT9V03X_W, 1, MT9V03X_W, 1, 0);
+//							 ips200_show_gray_image(0, 180, (const uint8 *)my_image.maze_display, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//	

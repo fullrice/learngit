@@ -17,31 +17,25 @@ const uint8 Weight[MT9V03X_H]=
 };
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 5000,
-    .Speed_Right_Set = 5000,
+    .Speed_Left_Set = 1000,
+    .Speed_Right_Set = 1000,
     .Straight_Speed = 0,
     .err = 0.0f,
     .last_err = 0.0f,
     .speed_lasterrL = 0.0f,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = 0.0f,
-    .D_DIRE = 0.0f,
-    .P_SPEED = 0.0f,
-    .I_SPEED = 0.0f,
+    .P_DIRE = -40  ,
+    .D_DIRE = 0.0f ,
+    .P_SPEED =3.39,
+    .I_SPEED = 0.7,
 	  .pwm_l=0.0f,
 	  .pwm_r=0.0f,
-	  .encoder1=0,//1300
-	  .encoder2=0 //1400
+	  .encoderl=0,//1300
+	  .encoderr=0,//1400
+    .steer_output=0
 };
 //0否定
-flag  my_flag={
-    .Go=0
 
-
-
-
-
-};
 /*-------------------------------------------------------------------------------------------------------------------
 @brief     右电机
   @param     pwm_R
@@ -105,7 +99,7 @@ float Err_Sum(void)
     for(i=MT9V03X_H-1;i>=MT9V03X_H-my_image.Search_Stop_Line-1;i--)//常规误差计算
     {
         err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1))*Weight[i];//右移1位，等效除2
-        weight_count+=Weight[i];
+        weight_count+=Weight[i]; 
     }
     err=err/weight_count;
     
@@ -296,20 +290,20 @@ void Velocity_Control(int speed_left_real,int speed_right_real)//赛道类型判
 void CascadeControl(float speed_l, float speed_r,int DesireSpeed) {
     /******************** 1. 方向环（内环）PD计算 ********************/
    // float steer_error = offset; // 当前横向偏差
-    float steer_output;         // 方向环输出（速度修正量）
+  //  mt_control.steer_output;         // 方向环输出（速度修正量）
     
     // PD计算（位置式）
-    steer_output = my_control.P_DIRE * my_control.err 
+    my_control.steer_output = my_control.P_DIRE * my_control.err 
                  + my_control.D_DIRE * (my_control.err  - my_control.last_err);
-    my_control.err  = my_control.last_err ; // 更新误差
+    my_control.last_err  = my_control.err ; // 更新误差
 
     // 方向环输出限幅（与期望速度同量级，如±0.3m/s）
-    if (steer_output > 0.3f)  steer_output = 0.3f;
-    if (steer_output < -0.3f) steer_output = -0.3f;
+  //  if (steer_output > 0.3f)  steer_output = 0.3f;
+ //   if (steer_output < -0.3f) steer_output = -0.3f;
 
     /******************** 2. 速度环（外环）输入合成 ********************/
-    float target_speed_l = DesireSpeed + steer_output; // 左轮目标速度
-    float target_speed_r = DesireSpeed - steer_output; // 右轮目标速度
+    float target_speed_l = DesireSpeed + my_control.steer_output; // 左轮目标速度
+    float target_speed_r = DesireSpeed - my_control.steer_output; // 右轮目标速度
 
     /******************** 3. 速度环PI计算（增量式） ********************/
     // 左轮速度环
@@ -322,7 +316,7 @@ void CascadeControl(float speed_l, float speed_r,int DesireSpeed) {
     float speed_err_r = target_speed_r - speed_r;
     int pwm_r = (int)(my_control.speed_lasterrR + 
               (my_control.I_SPEED* speed_err_r) + 
-              (my_control.P_SPEED * (speed_err_r - my_control.speed_lasterrR)));
+              (my_control.P_SPEED * (speed_err_r - my_control.speed_lasterrR)))+20;
 
     // 更新速度环历史误差（左轮）
    my_control.speed_lasterrL = speed_err_l;

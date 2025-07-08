@@ -413,6 +413,11 @@
               <FileType>5</FileType>
               <FilePath>..\user\src\test.txt</FilePath>
             </File>
+            <File>
+              <FileName>control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\control.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -437,6 +442,11 @@
               <FileName>motor.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>control.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\control.h</FilePath>
             </File>
           </Files>
         </Group>
