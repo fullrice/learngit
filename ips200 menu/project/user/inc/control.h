@@ -4,19 +4,18 @@
 
 typedef struct {
 	volatile int go;             //发车阶段的标志位
+	volatile int start;
 	volatile int cross;             //发车阶段的标志位
 	volatile int island; 	
 	volatile int time;
+	volatile int count_2s;
+	volatile int black; 
 }order;
+typedef struct {
+   volatile int right_down_line;//右下角点
+	
+}island;
 extern order my_order;
+void Cross_Detect();
 
-extern uint32 key1_count;
-extern uint32 key2_count;
-extern uint32 key3_count;
-extern uint32 key4_count;
-extern uint8  key1_flag;
-extern uint8  key2_flag;
-extern uint8  key3_flag;
-extern uint8  key4_flag;
-extern uint32 count_time;
 #endif

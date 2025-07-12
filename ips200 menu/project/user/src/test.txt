@@ -318,4 +318,33 @@ while(1)
 //							 ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 //				         ips200_show_gray_image(0, 170,my_image.image_two_value[MT9V03X_H-20], MT9V03X_W, 1, MT9V03X_W, 1, 0);
 //							 ips200_show_gray_image(0, 180, (const uint8 *)my_image.maze_display, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+
+
+
+	  //元素判断放在定时中断当中
+    all_init();  
+	//  my_order.go = 1;
+
+    while(1)
+    {
+//              if(mt9v03x_finish_flag)
+//			 {
+//				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+//				  Image_Binarization(Threshold);//图像二值化
+//			   // Longest_White_Column();
+//				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+//				 }
+//			 else{}  
+//	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//	  //     draw_mid_line();
+//   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//				 Longest_White_Column();
+//	   		 my_control.err=Err_Sum();
+		   	Motor_Left(500);
+		  	Motor_Right(500);
+    // 此处编写用户代码
+  // Camera_show();
+		//	    menu_main();
+
+	}
 //	

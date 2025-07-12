@@ -35,12 +35,13 @@
 
 #include "isr.h"
 #include "motor.h"
+#include "image.h"
 #include "control.h"
 extern float speed_mps1;
 extern float speed_mps2; 
 extern int count_2s;
 extern int count_10s;
-
+int Threshold=0;
 
 //uint32 d=0;
 //-------------------------------------------------------------------------------------------------------------------
@@ -62,14 +63,63 @@ void TIM1_UP_IRQHandler (void)
 void TIM2_IRQHandler (void)
 {
     // 此处编写用户代码
-	 my_control.encoderl=encoder_get_count(TIM3_ENCODER);
-	   encoder_clear_count(TIM3_ENCODER);
-	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
-	  encoder_clear_count(TIM4_ENCODER);
+//	  my_control.encoderl=encoder_get_count(TIM3_ENCODER);
+//	   encoder_clear_count(TIM3_ENCODER);
+//	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
+//	  encoder_clear_count(TIM4_ENCODER);
 	//speed_mps1 = encoder1 * 0.0102f;  // 假设 encoder1 是左电机
 	// speed_mps2 = encoder2 * 0.0102f;  // 假设 encoder1 是左电机
   //  d++;
 //	Longest_White_Column();
+//	      	 my_control.encoderl=encoder_get_count(TIM3_ENCODER);
+//	   encoder_clear_count(TIM3_ENCODER);
+//	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
+//	  encoder_clear_count(TIM4_ENCODER);
+ //  	PID_SPEED(my_control.encoderl/50,my_control.encoderr/50,150);
+	    my_order.black=0;
+				 for(int i=MT9V03X_H-3;i>=3;i--)
+			{
+				 if(my_image.image_two_value[i][MT9V03X_W/2]==0)
+				 {
+						my_order.black++;
+				 }
+			}
+			if(my_order.black>=50)
+			{
+			   my_order.go=0;
+			//	my_order.black=0;
+			}
+			else
+			{
+			   my_order.go=1;
+			//	my_order.black=0;
+			
+			}
+				
+	if(my_order.go==1 )
+	{
+	  PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
+  //    PID_DIR(5);	
+ //    Motor_Left(my_control.pwm_l+my_control.steer_output
+	   Motor_Left(my_control.pwm_l-my_control.steer_output);
+//	//+my_control.steer_output
+//    	Motor_Right(my_control.pwm_r-my_control.steer_output);
+   	  Motor_Right(my_control.pwm_r+my_control.steer_output);
+	//-my_control.steer_output
+  //	  Motor_Left(1000);
+  //  Motor_Right(1000); 
+ 	   PID_DIR(2);	
+	}
+	else
+	{
+     Motor_Right(0);
+	   Motor_Left(0);
+	}
+	
+	 // Motor_Left(1000);
+  //  Motor_Right(1000); 
+	  //	  Motor_Left(1500);
+ //   Motor_Right(700); 
     // 此处编写用户代码
     TIM2->SR &= ~TIM2->SR;                                                      // 清空中断状态
 }
@@ -117,48 +167,98 @@ void TIM5_IRQHandler (void)
 void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
-    count_2s++;
+     my_order.count_2s++;
+     my_control.encoderl=encoder_get_count(TIM3_ENCODER);
+	   encoder_clear_count(TIM3_ENCODER);
+	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
+	   encoder_clear_count(TIM4_ENCODER);
+//	  Motor_Left(1000);
+  //  Motor_Right(1000); 
  //   CascadeControl(my_control.encoderl,my_control.encoderr,my_control.Speed_Right_Set);
-	//			  Motor_Left(my_control.pwm_l);
-			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
- //    	  	Motor_Right(my_control.pwm_r);
-	//   count_10s++;
-	if(my_order.go == 1)
-	{
-	   
-	      CascadeControl(my_control.encoderl,my_control.encoderr,my_control.Speed_Right_Set);
-				  Motor_Left(my_control.pwm_l);
-			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
-     	  	Motor_Right(my_control.pwm_r);
-	
-	}
-	else{
-	     Motor_Left(0);
-			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
-     	  	Motor_Right(0);
-	
-	}
-	   switch(my_control.Speed_Right_Set)//换页
-			{
-				case 4000:my_order.time=500;break;
-				case 3000:my_order.time=1000;break;
-				case 2000:my_order.time=2000;break;
-				case 1000:my_order.time=4000;break;
-			//	case 80:page=214;arrow=0;break;
-			}	  
-//	      CascadeControl(my_control.encoderl,my_control.encoderr,3000);
 //				  Motor_Left(my_control.pwm_l);
-//			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
-    
-//     	  	Motor_Right(my_control.pwm_r);
-	   if(count_2s>=my_order.time)//停止
-		 {
+			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
+//    	  	Motor_Right(my_control.pwm_r);
+	//   count_10s++;
+	/*原地并环测试*/
 
-		   my_order.go=0;
-			 count_2s=0;
-		 }
-//		 
-			 
+	/*原地测试*/
+	    //       CascadeControl(my_control.encoderl,my_control.encoderr,0);
+		//					Motor_Left(my_control.pwm_l);
+	//						Motor_Right(my_control.pwm_r); my_image.Longest_White_Column_Right[0] >=40 
+	
+//	/*转向测试*/
+//	if(my_order.go == 1 )
+//			{
+//				       
+//	        my_control.pwm_l=-my_control.Speed_Right_Set;
+//					my_control.pwm_r=my_control.Speed_Right_Set;
+//			//		my_control.steer_output=100;
+//			    Motor_Left(my_control.pwm_l+my_control.steer_output);
+//     	    Motor_Right(my_control.pwm_r-my_control.steer_output);
+//      }
+//				else{
+//				      my_order.go = 0;
+//							Motor_Left(0);
+//							Motor_Right(0);
+//			
+//		    	} 
+//				 switch(my_control.Speed_Right_Set)//换页
+//					{
+//						case 600:my_order.time=300;break;
+//						case 500:my_order.time=500;break;
+//						case 400:my_order.time=1000;break;
+//						case 1000:my_order.time=350;break;
+//						case 100:my_order.time=1000;break;
+//					}	  				
+//				 if(my_order.count_2s>=my_order.time)//停止
+//				 {
+
+//					 my_order.go=0;
+//					 my_order.count_2s=0;
+//				 }
+	/*定时前进*/
+//			if(my_order.go == 1 )
+//			{
+//				       
+//				//	CascadeControl(my_control.encoder1,my_control.encoder2,3000);
+//			//			CascadeControl(my_control.encoderl,my_control.encoderr,1100);
+//					//		CascadeControl(my_control.encoderl,my_control.encoderr,0);
+//              PID_SPEED(my_control.encoderl,my_control.encoderr,my_control.Speed_Right_Set);
+//        //      PID_DIR(1);	
+//							Motor_Left(my_control.pwm_l+my_control.steer_output);
+//					// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
+//							Motor_Right(my_control.pwm_r-my_control.steer_output);
+//			
+//			}
+//			else{
+//				  my_order.go = 0;
+//							Motor_Left(0);
+//					// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
+//							Motor_Right(0);
+//			
+//			} 
+//				 switch(my_control.Speed_Right_Set)//换页
+//					{
+//						case 600:my_order.time=300;break;
+//						case 500:my_order.time=500;break;
+//						case 400:my_order.time=1000;break;
+//						case 200:my_order.time=350;break;
+//						case 100:my_order.time=1000;break;
+//					}	  
+//		//	      CascadeControl(my_control.encoderl,my_control.encoderr,3000);
+//		//				  Motor_Left(my_control.pwm_l);
+//		//			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
+//				
+//		//     	  	Motor_Right(my_control.pwm_r);
+//					
+//				 if(my_order.count_2s>=my_order.time)//停止
+//				 {
+
+//					 my_order.go=0;
+//					 my_order.count_2s=0;
+//				 }
+//		//		 
+//			 
 			 
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
@@ -171,43 +271,26 @@ void TIM6_IRQHandler (void)
 void TIM7_IRQHandler (void)
 {
     // 此处编写用户代码
-     if(key1_flag)
-	{
-		key1_count++;
-		if(key1_count>count_time)
-		{
-			key1_count=0;
-			key1_flag=0;
-		}
-	}
-	if(key2_flag)
-	{
-		key2_count++;
-		if(key2_count>count_time)
-		{
-			key2_count=0;
-			key2_flag=0;
-		}
-	}
-	if(key3_flag)
-	{
-		key3_count++;
-		if(key3_count>count_time)
-		{
-			key3_count=0;
-			key3_flag=0;
-		}
-	}
-	if(key4_flag)
-	{
-		key4_count++;
-		if(key4_count>count_time)
-		{
-			key4_count=0;
-			key4_flag=0;
-		}
-	}
-    // 此处编写用户代码
+    if(mt9v03x_finish_flag)
+			 {
+				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+				  Image_Binarization(Threshold);//图像二值化
+			   // Longest_White_Column();
+				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				 }
+			 else{}  
+	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+	  //     draw_mid_line();
+   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+				 Longest_White_Column();
+		//		 my_control.err= err_sum_average(25,30);
+			//	 Cross_Detect(); 
+			//  	 draw_boundary_lines();
+	   		 my_control.err=Err_Sum()*1.1;
+				
+				
+				
+//    // 此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
 }
 

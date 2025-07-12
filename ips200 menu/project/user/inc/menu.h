@@ -4,10 +4,10 @@
 #include "zf_common_headfile.h"
 /*宏定义*/
 //按键设置
-#define key_enter  (E2)
-#define key_return (E3) 
-#define key_down (E4) //K2
-#define key_up (E5) //K1
+#define key_enter  (E2) //k1
+#define key_return (E3) //k2
+#define key_down (E4) //K3
+#define key_up (E5) //K4
 //#define key_add 8//K3
 //#define key_sub 2//K4
 
@@ -20,5 +20,6 @@
 #define lcd_showint(x, y, dat, num)         ips200_show_int(x, y, dat, num)
 void menu_main();
 void Menu_show_1();
+void Camera_show();
 
 #endif

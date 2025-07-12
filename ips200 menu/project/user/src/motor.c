@@ -1,38 +1,116 @@
 #include "motor.h"
 #include "image.h"
 #include <math.h>
-
-#define DIFF_MAX     20
-#define DIFF_MIN      0
+#define PB  6
+#define PM  5
+#define PS  4
+#define ZO  3
+#define NS  2
+#define NM  1
+#define NB  0
+ 
+float U=0;                            /*偏差,偏差微分以及输出值的精确量*/
+float PF[2]={0},DF[2]={0},UF[4]={0};  /*偏差,偏差微分以及输出值的隶属度*/
+int Pn=0,Dn=0,Un[4]={0};
+float t1=0,t2=0,t3=0,t4=0,temp1=0,temp2=0;
+int pwm_l,pwm_r=0;
 //加权控制
+//const uint8 Weight[MT9V03X_H]=
+//{
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端20 ——29 行权重
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端60 ——69 行权重
+//};
+//const uint8 Weight[MT9V03X_H]=
+//{
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端20 ——29 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端40 ——49 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端60 ——69 行权重
+//};
 const uint8 Weight[MT9V03X_H]=
 {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
         1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端20 ——29 行权重
-        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
-       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端60 ——69 行权重
+        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端30 ——39 行权重
+	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+       1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端40 ——49 行权重
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1  ,              //图像最远端50 ——59 行权重
+       1, 1, 1, 1  ,19,17,15,13,13 ,               //图像最远端60 ——69 行权重
 };
+//const uint8 Weight[MT9V03X_H]=
+//{
+//        19,17,15,13,11,19,17,15,13,11 ,               //图像最远端00 ——09 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端20 ——29 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端30 ——39 行权重
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+//       1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端40 ——49 行权重
+//       1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,                 //图像最远端60 ——69 行权重
+//};
+//const uint8 Weight[MT9V03X_H]=
+//{
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,  
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//	       19,17,15,13,11, 9, 7, 5, 3, 1, 
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v             //图像最远端60 ——69 行权重
+//};
+//const uint8 Weight[MT9V03X_H]=
+//{
+//	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v             //图像最远端60 ——69 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,  
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
+//};
+//const uint8 Weight[MT9V03X_H]=
+//{
+//       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,  
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v      
+//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v             //图像最远端60 ——69 行权重
+//};
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 1000,
-    .Speed_Right_Set = 1000,
+    .Speed_Left_Set = 210,
+    .Speed_Right_Set = 210,
     .Straight_Speed = 0,
-    .err = 0.0f,
+    .err = 0.0f,//左正右负，并且保证向左转的时候左轮小于右轮，那么
     .last_err = 0.0f,
-    .speed_lasterrL = 0.0f,
+    .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -40  ,
-    .D_DIRE = 0.0f ,
-    .P_SPEED =3.39,
-    .I_SPEED = 0.7,
+    .P_DIRE = -30   ,//-13 -25
+    .D_DIRE = 0  ,
+    .P_SPEED=5.69  , //5.69
+    .I_SPEED =0, //0.1
 	  .pwm_l=0.0f,
 	  .pwm_r=0.0f,
 	  .encoderl=0,//1300
 	  .encoderr=0,//1400
-    .steer_output=0
+    .steer_output=0,
+	  .speed_err=0
 };
 //0否定
 
@@ -48,15 +126,17 @@ void Motor_Right(int pwm_R)
         pwm_R=SPEED_MAX;
     else if(pwm_R<=SPEED_MIN)
         pwm_R=SPEED_MIN;
-    if(pwm_R>=0)
+    if(pwm_R<=0)
    {
-            gpio_set_level(DIR_R, GPIO_HIGH);                                   // DIR输出高电平
-            pwm_set_duty(PWM_R, pwm_R );                   // 计算占空比
+		     // gpio_set_level(DIR_L, GPIO_LOW);  //凡
+              gpio_set_level(DIR_R, GPIO_HIGH);                                      // DIR输出高电平
+            pwm_set_duty(PWM_R, -pwm_R );                   // 计算占空比
    }
   else
    {
-            gpio_set_level(DIR_R, GPIO_LOW);                                    // DIR输出低电平
-            pwm_set_duty(PWM_R, -pwm_R);                // 计算占空比
+         // gpio_set_level(DIR_R, GPIO_HIGH);   //凡
+		       gpio_set_level(DIR_R, GPIO_LOW);                                   // DIR输出低电平
+            pwm_set_duty(PWM_R, pwm_R);                // 计算占空比
    }
 }
 /*-------------------------------------------------------------------------------------------------------------------
@@ -73,12 +153,15 @@ void Motor_Left(int pwm_L)
         pwm_L=SPEED_MIN;
     if(pwm_L>=0)
    {
-            gpio_set_level(DIR_L, GPIO_HIGH);                                   // DIR输出高电平
+		       //  gpio_set_level(DIR_L, GPIO_HIGH);    //凡                               // DIR输出高电平
+             gpio_set_level(DIR_L, GPIO_LOW);                                  // DIR输出高电平
             pwm_set_duty(PWM_L, pwm_L );                   // 计算占空比  映射
    }
   else
    {
-            gpio_set_level(DIR_L, GPIO_LOW);                                    // DIR输出低电平
+		//  gpio_set_level(DIR_L, GPIO_LOW);  //凡
+		 gpio_set_level(DIR_L, GPIO_HIGH);  
+                                        // DIR输出低电平
             pwm_set_duty(PWM_L, -pwm_L);                // 计算占空比
    }
 }
@@ -103,6 +186,27 @@ float Err_Sum(void)
     }
     err=err/weight_count;
     
+    return err;
+}
+float err_sum_average(uint8 start_point,uint8 end_point)
+{
+    //防止参数输入错误
+    if(end_point<start_point)
+    {
+        uint8 t=end_point;
+        end_point=start_point;
+        start_point=t;
+    }
+
+    if(start_point<MT9V03X_H-my_image.Search_Stop_Line)start_point=MT9V03X_H-my_image.Search_Stop_Line-1;//防止起点越界
+    if(end_point<MT9V03X_H-my_image.Search_Stop_Line)end_point=MT9V03X_H-my_image.Search_Stop_Line-2;//防止终点越界
+
+    float err=0;
+    for(int i=start_point;i<end_point;i++)
+    {
+        err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
+    }
+    err=err/(end_point-start_point);
     return err;
 }
 
@@ -157,93 +261,7 @@ float Optimized_Err_Sum(void)
     // 返回加权平均误差（防止除零）
     return (weight_sum > 0.001f) ? (err / weight_sum) : 0.0f;
 }
-/*-------------------------------------------------------------------------------------------------------------------
-  @brief     差速的计算
-  @param     价值，误差，两个参数
-  @return    获取到的diff
-  @note      计算
--------------------------------------------------------------------------------------------------------------------*/
-//函数本体 //简单的位置pid
-int PD_DIFF(float expect_val,float err,float P,float D)//舵机PD调节
-{
-   float  u;
-   volatile static float error_current,error_last;
-   float ek,ek1;
-   error_current=err-expect_val;
-   ek=error_current;
-   ek1=error_current-error_last;
-   u=P*ek+D*ek1;
-   error_last=error_current;
- 
-   if(u>=DIFF_MAX )//限幅处理
-       u=DIFF_MAX;
-   else if(u<=DIFF_MIN)//限幅处理
-       u=DIFF_MIN;
-   return (int)u;
-}
 
-
-/*-------------------------------------------------------------------------------------------------------------------
-  @brief     PID控制
-  @param     int set_speed ,int speed,期望值，实际值,参数值
-  @return    电机占空比SPEED_MIN~SPEED_MAX
-  Sample     pwm_R= PID_R(set_speed_right,right_wheel);//pid控制电机转速
-             pwm_L= PID_L(set_speed_left,left_wheel ); //pid控制电机转速
-  @note      调参是门玄学
--------------------------------------------------------------------------------------------------------------------*/
-int PID_L(int set_speed ,int speed,float kp, float ki)//pid控制电机转速//使用的pid可以多套
-{
-    volatile static int out;
-    volatile static int out_increment;
-    volatile static int ek,ek1;
-  //  float kp=1.46,ki=2.3;
- 
-   
-    ek1 = ek;
-    ek = set_speed - speed;
-    out_increment= (int)(kp*(ek-ek1) + ki*ek);
-    out+= out_increment;
- 
-    if(out>=SPEED_MAX)//限幅处理
-        out=SPEED_MAX;
-    else if(out<=SPEED_MIN)
-        out=SPEED_MIN;
-    return (int) out;
-}
-
-/*-------------------------------------------------------------------------------------------------------------------
-  @brief     PID控制
-  @param     int set_speed ,int speed,期望值，实际值,参数值
-  @return    电机占空比SPEED_MIN~SPEED_MAX
-  Sample     pwm_R= PID_R(set_speed_right,right_wheel);//pid控制电机转速
-             pwm_L= PID_L(set_speed_left,left_wheel ); //pid控制电机转速
-  @note      调参是门玄学
--------------------------------------------------------------------------------------------------------------------*/
-int PID_R(int set_speed ,int speed,float kp, float ki)//pid控制电机转速//使用的pid可以多套
-{
-    volatile static int out;
-    volatile static int out_increment;
-    volatile static int ek,ek1;
-  //  float kp=1.46,ki=2.3;
-   float kp_out,ki_out;
-   
-    ek1 = ek;
-    ek = set_speed - speed;
-	  kp_out=kp*(ek-ek1);
-	  ki_out=ki*ek;
-	  ki_out=(ki>=100)?0:ki_out;
-	  ki_out=(ki<=-100)?0:ki_out;
-    out_increment= (int)(kp_out + ki_out);
-    out+= out_increment;
- 
-    if(out>=SPEED_MAX)//限幅处理
-        out=SPEED_MAX;
-    else if(out<=SPEED_MIN)
-        out=SPEED_MIN;
-    return (int) out;
-}
-
- 
 void Velocity_Control(int speed_left_real,int speed_right_real)//赛道类型判别，来选定速度
 {
     int pwm_R=0,pwm_L=0;
@@ -278,6 +296,206 @@ void Velocity_Control(int speed_left_real,int speed_right_real)//赛道类型判
     Motor_Left (pwm_L);
     Motor_Right(pwm_R);
 }
+float Fuzzy_P(int E,int EC)
+{
+ 
+ 
+//只要改下面这几行参数
+    //这玩意没什么规律，p越大，转弯越好，直道会有抖动，p小转不过来，凭感觉调
+    //建议先用单套pd，看看车子正常的p大概在什么范围，下面的p就会有方向
+	float EFF[7]={-100,-80,-60,0,60,80,100};//摄像头误差分区
+    /*输入量D语言值特征点*/
+    float DFF[7]={-80,-60,-20,0,20,60,80};//误差变化率分区
+    /*输出量U语言值特征点(根据赛道类型选择不同的输出值)*/
+    float UFF[7]={0,0.36,0.75,0.996,1.36953,1.7098,2.185};//限幅分区
+//只要改上面这几行参数
+ 
+ 
+	int rule[7][7]={
+    //    0   1   2   3   4   5   6
+        { 6 , 5 , 4 , 3 , 2 , 1 , 0},//0
+        { 5 , 4 , 3 , 2 , 1 , 0 , 1},//1
+        { 4 , 3 , 2 , 1 , 0 , 1 , 2},//2
+        { 3 , 2 , 1 , 0 , 1 , 2 , 3},//3
+        { 2 , 1 , 0 , 1 , 2 , 3 , 4},//4
+        { 1 , 0 , 1 , 2 , 3 , 4 , 5},//5
+        { 0 , 1 , 2 , 3 , 4 , 5 , 6},//6
+    };
+ 
+    /*隶属度的确定*/
+    /*根据PD的指定语言值获得有效隶属度*/
+    if((E>(*(EFF+0))) && (E<(*(EFF+6))))
+    {
+        if(E<=((*(EFF+1))))
+        {
+            Pn=-2;
+            *(PF+0)=((*(EFF+1))-E)/((*(EFF+1))-((*(EFF+0))));
+        }
+        else if(E<=((*(EFF+2))))
+        {
+            Pn=-1;
+            *(PF+0)=((*(EFF+2))-E)/((*(EFF+2))-(*(EFF+1)));
+        }
+        else if(E<=((*(EFF+3))))
+        {
+            Pn=0;
+            *(PF+0)=((*(EFF+3))-E)/((*(EFF+3))-(*(EFF+2)));
+        }
+        else if(E<=((*(EFF+4))))
+        {
+            Pn=1;
+            *(PF+0)=((*(EFF+4))-E)/((*(EFF+4))-(*(EFF+3)));
+        }
+        else if(E<=((*(EFF+5))))
+        {
+            Pn=2;
+            *(PF+0)=((*(EFF+5))-E)/((*(EFF+5))-(*(EFF+4)));
+        }
+        else if(E<=((*(EFF+6))))
+        {
+            Pn=3;
+            *(PF+0)=((*(EFF+6))-E)/((*(EFF+6))-(*(EFF+5)));
+        }
+    }
+ 
+    else if(E<=((*(EFF+0))))
+    {
+        Pn=-2;
+        *(PF+0)=1;
+    }
+    else if(E>=((*(EFF+6))))
+    {
+        Pn=3;
+        *(PF+0)=0;
+    }
+ 
+   *(PF+1)=1-(*(PF+0));
+ 
+ 
+    //判断D的隶属度
+    if(EC>(*(DFF+0))&&EC<(*(DFF+6)))
+    {
+        if(EC<=(*(DFF+1)))
+        {
+            Dn=-2;
+            (*(DF+0))=((*(DFF+1))-EC)/((*(DFF+1))-(*(DFF+0)));
+        }
+        else if(EC<=(*(DFF+2)))
+        {
+            Dn=-1;
+            (*(DF+0))=((*(DFF+2))-EC)/((*(DFF+2))-(*(DFF+1)));
+        }
+        else if(EC<=(*(DFF+3)))
+        {
+            Dn=0;
+            (*(DF+0))=((*(DFF+3))-EC)/((*(DFF+3))-(*(DFF+2)));
+        }
+        else if(EC<=(*(DFF+4)))
+        {
+            Dn=1;
+            (*(DF+0))=((*(DFF+4))-EC)/((*(DFF+4))-(*(DFF+3)));
+        }
+        else if(EC<=(*(DFF+5)))
+        {
+            Dn=2;
+            (*(DF+0))=((*(DFF+5))-EC)/((*(DFF+5))-(*(DFF+4)));
+        }
+        else if(EC<=(*(DFF+6)))
+        {
+            Dn=3;
+            (*(DF+0))=((*(DFF+6))-EC)/((*(DFF+6))-(*(DFF+5)));
+        }
+    }
+    //不在给定的区间内
+    else if (EC<=(*(DFF+0)))
+    {
+        Dn=-2;
+        (*(DF+0))=1;
+    }
+    else if(EC>=(*(DFF+6)))
+    {
+        Dn=3;
+        (*(DF+0))=0;
+    }
+ 
+    DF[1]=1-(*(DF+0));
+ 
+    /*使用误差范围优化后的规则表rule[7][7]*/
+    /*输出值使用13个隶属函数,中心值由UFF[7]指定*/
+    /*一般都是四个规则有效*/
+    Un[0]=rule[Pn+2][Dn+2];
+    Un[1]=rule[Pn+3][Dn+2];
+    Un[2]=rule[Pn+2][Dn+3];
+    Un[3]=rule[Pn+3][Dn+3];
+ 
+    if((*(PF+0))<=(*(DF+0)))    //求小
+        (*(UF+0))=*(PF+0);
+    else
+        (*(UF+0))=(*(DF+0));
+    if((*(PF+1))<=(*(DF+0)))
+        (*(UF+1))=*(PF+1);
+    else
+        (*(UF+1))=(*(DF+0));
+    if((*(PF+0))<=DF[1])
+        (*(UF+2))=*(PF+0);
+    else
+        (*(UF+2))=DF[1];
+    if((*(PF+1))<=DF[1])
+        (*(UF+3))=*(PF+1);
+    else
+        (*(UF+3))=DF[1];
+    /*同隶属函数输出语言值求大*/
+    if(Un[0]==Un[1])
+    {
+        if(((*(UF+0)))>((*(UF+1))))
+            (*(UF+1))=0;
+        else
+            (*(UF+0))=0;
+    }
+    if(Un[0]==Un[2])
+    {
+        if(((*(UF+0)))>((*(UF+2))))
+            (*(UF+2))=0;
+        else
+            (*(UF+0))=0;
+    }
+    if(Un[0]==Un[3])
+    {
+        if((*(UF+0))>(*(UF+3)))
+            (*(UF+3))=0;
+        else
+            (*(UF+0))=0;
+    }
+    if(Un[1]==Un[2])
+    {
+        if((*(UF+1))>(*(UF+2)))
+            (*(UF+2))=0;
+        else
+            (*(UF+1))=0;
+    }
+    if(Un[1]==Un[3])
+    {
+        if((*(UF+1))>(*(UF+3)))
+            (*(UF+3))=0;
+        else
+            (*(UF+1))=0;
+    }
+    if(Un[2]==Un[3])
+    {
+        if((*(UF+2))>(*(UF+3)))
+            (*(UF+3))=0;
+        else
+            (*(UF+2))=0;
+    }
+    t1=((*(UF+0)))*(*(UFF+(*(Un+0))));
+    t2=((*(UF+1)))*(*(UFF+(*(Un+1))));
+    t3=((*(UF+2)))*(*(UFF+(*(Un+2))));
+    t4=((*(UF+3)))*(*(UFF+(*(Un+3))));
+    temp1=t1+t2+t3+t4;
+    temp2=(*(UF+0))+(*(UF+1))+(*(UF+2))+(*(UF+3));//模糊量输出
+    U=temp1/temp2;
+    return U;
+}
 
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     PID串行控制
@@ -308,15 +526,16 @@ void CascadeControl(float speed_l, float speed_r,int DesireSpeed) {
     /******************** 3. 速度环PI计算（增量式） ********************/
     // 左轮速度环
     float speed_err_l = target_speed_l - speed_l;
-    int pwm_l = (int)(my_control.speed_lasterrL+ 
-              (my_control.I_SPEED * speed_err_l) + 
+//    int pwm_l = (int)(my_control.speed_lasterrL+ 
+//              (my_control.I_SPEED * speed_err_l) + 
+//              (my_control.P_SPEED * (speed_err_l - my_control.speed_lasterrL)));
+    pwm_l = (int)( (my_control.I_SPEED * speed_err_l) + 
               (my_control.P_SPEED * (speed_err_l - my_control.speed_lasterrL)));
-    
     // 右轮速度环（独立计算误差）
     float speed_err_r = target_speed_r - speed_r;
-    int pwm_r = (int)(my_control.speed_lasterrR + 
-              (my_control.I_SPEED* speed_err_r) + 
-              (my_control.P_SPEED * (speed_err_r - my_control.speed_lasterrR)))+20;
+		//my_control.speed_lasterrR
+    pwm_r = (int)( (my_control.I_SPEED* speed_err_r) + 
+              (my_control.P_SPEED * (speed_err_r - my_control.speed_lasterrR)));
 
     // 更新速度环历史误差（左轮）
    my_control.speed_lasterrL = speed_err_l;
@@ -325,19 +544,180 @@ void CascadeControl(float speed_l, float speed_r,int DesireSpeed) {
     my_control.speed_lasterrR = speed_err_r;
 
     /******************** 4. PWM限幅及电机输出 ********************/
-    // 左轮PWM限幅
-    if (pwm_l > SPEED_MAX) pwm_l = SPEED_MAX;
-    if (pwm_l < SPEED_MIN) pwm_l = SPEED_MIN;
+   
+		
+		my_control.pwm_l=my_control.pwm_l+pwm_l;//
+		my_control.pwm_r=my_control.pwm_r+pwm_r;//
+		 // 左轮PWM限幅
+    if (my_control.pwm_l > SPEED_MAX) my_control.pwm_l = SPEED_MAX;
+    if (my_control.pwm_l < SPEED_MIN) my_control.pwm_l = SPEED_MIN;
     
-    // 右轮PWM限幅
-    if (pwm_r > SPEED_MAX) pwm_r = SPEED_MAX;
-    if (pwm_r < SPEED_MIN) pwm_r = SPEED_MIN;
-		
-		my_control.pwm_l=pwm_l;
-		my_control.pwm_r=pwm_r;
-		
+  // 右轮PWM限幅
+    if (my_control.pwm_r > SPEED_MAX) my_control.pwm_r = SPEED_MAX;
+    if (my_control.pwm_r < SPEED_MIN) my_control.pwm_r = SPEED_MIN;
 	//	Motor_Left(pwm_l);
 //		Motor_Right(pwm_r);
     // 实际电机输出（需根据硬件接口调整）
+  
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     PID并行控制的速度环
+  @param     int set_speed ,int speed,期望值，实际值,参数值
+  @return    电机占空比SPEED_MIN~SPEED_MAX
+  Sample     pwm_R= PID_R(set_speed_right,right_wheel);//pid控制电机转速
+             pwm_L= PID_L(set_speed_left,left_wheel ); //pid控制电机转速
+  @note      调参是门玄学
+-------------------------------------------------------------------------------------------------------------------*/
+void PID1_SPEED(float speed_l, float speed_r,int DesireSpeed)  {
+
+    /******************** 2. 速度环（外环）输入合成 ********************/
+    float target_speed_l = DesireSpeed ;
+    float target_speed_r = DesireSpeed ;
+      // 更新速度环历史误差（左轮）
+   my_control.speed_lasterrL = my_control.speed_err;
+   my_control.speed_lasterrR = my_control.speed_err; 
+    // 更新右轮误差（若独立计算）
+    /******************** 3. 速度环PI计算（增量式） ********************/
+    // 左轮速度环
+   my_control.speed_err= target_speed_l - speed_l;
+//    int pwm_l = (int)(my_control.speed_lasterrL+ 
+//              (my_control.I_SPEED * speed_err_l) + 
+//              (my_control.P_SPEED * (speed_err_l - my_control.speed_lasterrL)));
+    my_control.pwm_l+= (int)( (my_control.I_SPEED * my_control.speed_err) + 
+              (my_control.P_SPEED * (my_control.speed_err - my_control.speed_lasterrL)));
+    // 右轮速度环（独立计算误差）
+    my_control.speed_err = target_speed_r - speed_r;
+		//my_control.speed_lasterrR
+    my_control.pwm_r+= (int)( (my_control.I_SPEED* my_control.speed_err) + 
+              (my_control.P_SPEED * (my_control.speed_err - my_control.speed_lasterrR)));
+
+
+
+    /******************** 4. PWM限幅及电机输出 ********************/
+   
+		
+//		my_control.pwm_l=my_control.pwm_l+pwm_l;//
+	//	my_control.pwm_r=my_control.pwm_r+pwm_r;//
+		 // 左轮PWM限幅
+    if (my_control.pwm_l > SPEED_MAX) my_control.pwm_l = SPEED_MAX;
+    if (my_control.pwm_l < SPEED_MIN) my_control.pwm_l = SPEED_MIN;
+    
+  // 右轮PWM限幅
+    if (my_control.pwm_r > SPEED_MAX) my_control.pwm_r = SPEED_MAX;
+    if (my_control.pwm_r < SPEED_MIN) my_control.pwm_r = SPEED_MIN;
+	//	Motor_Left(pwm_l);
+//		Motor_Right(pwm_r);
+    // 实际电机输出（需根据硬件接口调整）
+  
+}
+
+void PID_SPEED(float speed_l, float speed_r, int DesireSpeed) {
+    // 目标速度
+    float target_speed = DesireSpeed;
+
+    // 计算左右轮独立误差
+    float err_l = target_speed - speed_l;
+    float err_r = target_speed - speed_r;
+
+    // 增量式 PID 计算（左轮）
+    float delta_pwm_l = 
+        my_control.P_SPEED * (err_l - my_control.speed_lasterrL) +  // P 项
+        my_control.I_SPEED * err_l;                                 // I 项
+
+    // 增量式 PID 计算（右轮）
+    float delta_pwm_r = 
+        my_control.P_SPEED * (err_r - my_control.speed_lasterrR) +  // P 项
+        my_control.I_SPEED * err_r;                                 // I 项
+
+    // 更新 PWM 输出（左轮）
+    my_control.pwm_l += (int)delta_pwm_l;
+		if (my_control.pwm_l > SPEED_MAX) my_control.pwm_l = SPEED_MAX;
+    if (my_control.pwm_l < SPEED_MIN) my_control.pwm_l = SPEED_MIN;
+     my_control.pwm_r += (int)delta_pwm_r;
+  // 右轮PWM限幅
+    if (my_control.pwm_r > SPEED_MAX) my_control.pwm_r = SPEED_MAX;
+    if (my_control.pwm_r < SPEED_MIN) my_control.pwm_r = SPEED_MIN;
+   
+    // 更新 PWM 输出（右轮）
+
+
+
+    // 保存历史误差（用于下一次计算）
+    my_control.speed_lasterrL = err_l;
+    my_control.speed_lasterrR = err_r;
+}
+void PID2_SPEED(float speed, int DesireSpeed) {
+    // 目标速度
+    float target_speed = DesireSpeed;
+
+   float err=target_speed - speed;
+
+    // 增量式 PID 计算（左轮）
+    float delta_pwm = 
+        my_control.P_SPEED * (err - my_control.speed_lasterrL) +  // P 项
+        my_control.I_SPEED * err;                                 // I 项
+                              // I 项
+
+    // 更新 PWM 输出（左轮）
+    my_control.pwm_l += (int)delta_pwm;
+		if (my_control.pwm_l > SPEED_MAX) my_control.pwm_l = SPEED_MAX;
+    if (my_control.pwm_l < SPEED_MIN) my_control.pwm_l = SPEED_MIN;
+     my_control.pwm_r += (int)delta_pwm;
+  // 右轮PWM限幅
+    if (my_control.pwm_r > SPEED_MAX) my_control.pwm_r = SPEED_MAX;
+    if (my_control.pwm_r < SPEED_MIN) my_control.pwm_r = SPEED_MIN;
+   
+    // 更新 PWM 输出（右轮）
+
+
+
+    // 保存历史误差（用于下一次计算）
+    my_control.speed_lasterrL = err;
+    my_control.speed_lasterrR = err;
+}
+float my_abs(float x) {
+    return (x < 0) ? -x : x;
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     PID并行控制的方向环
+  @param     int set_speed ,int speed,期望值，实际值,参数值
+  @return    电机占空比SPEED_MIN~SPEED_MAX
+  Sample     pwm_R= PID_R(set_speed_right,right_wheel);//pid控制电机转速
+             pwm_L= PID_L(set_speed_left,left_wheel ); //pid控制电机转速
+  @note      调参是门玄学
+-------------------------------------------------------------------------------------------------------------------*/
+void PID_DIR(int offset) {
+   // PD计算（位置式）
+	if(my_abs(my_control.err)>=13)
+	{
+	   my_control.P_DIRE=-35          ;
+	 	my_control.Speed_Right_Set=my_control.Speed_Left_Set  ;
+	}
+	else
+	{
+	   my_control.P_DIRE=-30;
+		my_control.Speed_Right_Set=my_control.Speed_Left_Set;
+	}
+//	if(my_control.err>20 || my_control.err<=-20)
+//	{ 
+//	     my_control.P_DIRE=-40;
+//		
+//	}
+//	else
+//	{
+//	    my_control.P_DIRE=-20;
+//	
+//	}
+	  my_control.steer_output =0;  
+    my_control.steer_output = my_control.P_DIRE * my_control.err 
+                 + my_control.D_DIRE * (my_control.err  - my_control.last_err);
+    my_control.last_err  = my_control.err ; // 更新误差
+   //输出限幅
+    my_control.steer_output=my_control.steer_output*offset;
+	 if(my_control.steer_output>DIFF_MAX )
+	 {my_control.steer_output =DIFF_MAX ;}
+	  if(my_control.steer_output<DIFF_MIN )
+	 {my_control.steer_output =DIFF_MIN ;}
   
 }

@@ -48,8 +48,8 @@
 uint32 a=20,b=0;
 uint8 image_copy[MT9V03X_H][MT9V03X_W];
 uint8 image_copy_two_value[MT9V03X_H][MT9V03X_W];//二值化后的原数组
-int Threshold=0;
-int count_2s=0;
+//int Threshold=0;
+//int count_2s=0;
 int count_10s=0;
 int32 encoder1;
 int32 encoder2;
@@ -98,60 +98,45 @@ void all_init(void)
     //  timer_init(TIM_1, TIMER_US);
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
-	    pit_ms_init(TIM6_PIT, 1);//
-			pit_ms_init(TIM7_PIT, 1);//
-	 		pit_ms_init(TIM2_PIT, 10);//
-    //  interrupt_set_priority(TIM6_IRQn, 1);
+	    pit_ms_init(TIM6_PIT, 10);//
+			pit_ms_init(TIM7_PIT, 20);//图像
+	 		pit_ms_init(TIM2_PIT, 20);//
+      interrupt_set_priority(TIM6_IRQn, 1);
+			interrupt_set_priority(TIM7_IRQn, 2);
+			interrupt_set_priority(TIM2_IRQn, 3);
     //  pit_ms_init(TIM2_PIT, 100);
     
     /* Flash操作（注释状态） */
     // flash_read_page(FLASH_SECTOR, FLASH_PAGE, &b, 1);
-
+     key_init(5);
     //============================= 延时与完成 ===============================//
     system_delay_ms(300);             // 初始化延时
    // system_delay_ms(1000);            // 显示延时
 }
 
 float steer_output;         // 方向环输出（速度修正量）
+#define MAX_DUTY            (50 )   
+int8 duty = 0;
+bool dir1 = true;
+
 int main(void)
 {
-	  //元素判断放在定时中断当中
-    all_init();  
-	//  my_order.go = 1;
-
+    all_init();
+    // 此处编写用户代码 例如外设初始化代码等
     while(1)
     {
-       /**/			
-			  if(mt9v03x_finish_flag)
-			 {
-				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
-				  Image_Binarization(Threshold);//图像二值化
-			   // Longest_White_Column();
-				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
-				 }
-			 else{}  
-	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	  //     draw_mid_line();
-   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-				 Longest_White_Column();
-	   		 my_control.err=Err_Sum(); 
-//    // PD计算（位置式）
-//    steer_output = my_control.P_DIRE * my_control.err + my_control.D_DIRE * (my_control.err  - my_control.last_err);
-//   my_control.last_err  = my_control.err ; // 更新误差
-//       /*image*/			
-//          ips200_show_int(0, 130, my_control.err, 5);
-			//	  ips200_show_float(30, 130, steer_output, 5,3);
-			    menu_main();
-		//     Motor_Right(2000);
-		//			Motor_Left(2000);
-			
+        //此处编写需要循环执行的代码
+   //       PID_SPEED(my_control.encoderl,my_control.encoderr,100);
+
+  //    Motor_Left(my_control.pwm_l+my_control.steer_output);
+
+ //   	Motor_Right(my_control.pwm_r-my_control.steer_output);
+        //    gpio_set_level(DIR_L, GPIO_HIGH);                                   // DIR输出高电平
+       //     pwm_set_duty(PWM_L, 50 * (PWM_DUTY_MAX / 100));                   // 计算占空比
+            Camera_show();
+     //       Motor_Left(2000);
+       
+        system_delay_ms(50);
         // 此处编写需要循环执行的代码
-//         lcd_showstr(0,40,"speed_l");
-//				 lcd_showstr(0,60,"speed_r");
-		//		 lcd_showint(100,40, my_control.encoderr, 5);
-	//			 lcd_showint(100,60, my_control.encoderl, 5);
-	//			 ips200_show_int(0, 130, my_order.go, 5);
-        // 此处编写需要循环执行的代码
-    
-	}
+    }
 }

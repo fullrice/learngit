@@ -389,7 +389,7 @@ void ips200_set_color (const uint16 pen, const uint16 bgcolor)
 // 参数说明     color           颜色格式 RGB565 或者可以使用 zf_common_font.h 内 rgb565_color_enum 枚举值或者自行写入
 // 返回参数     void
 // 使用示例     ips200_draw_point(0, 0, RGB565_RED);            //坐标0,0画一个红色的点
-// 备注信息     
+// 备注信息     RGB565_GREEN
 //-------------------------------------------------------------------------------------------------------------------
 void ips200_draw_point (uint16 x, uint16 y, const uint16 color)
 {

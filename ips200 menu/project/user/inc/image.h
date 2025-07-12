@@ -51,6 +51,7 @@ typedef struct
 		volatile int Left_Up_Find;   //四个拐点标志
 		volatile int Right_Down_Find;
 		volatile int Right_Up_Find;
+		volatile int cross_count;
 } Image;
 
 // 声明全局的结构体变量
@@ -62,15 +63,9 @@ void Image_Binarization(int threshold);
 int Distributed_Otsu_Threshold(uint8 *image, uint16 width, uint16 height);
 void Image_Binarization2(uint8 (*src_image)[MT9V03X_W], uint8 (*dst_image)[MT9V03X_W], uint16 width, uint16 height, int threshold);
 void Partitioned_Otsu_Binarization(uint8 (*src_image)[MT9V03X_W], uint8 (*dst_image)[MT9V03X_W], uint16 width, uint16 height);
-void lq_sobelAutoThreshold (unsigned char imageIn[MT9V03X_H][MT9V03X_W], unsigned char imageOut[MT9V03X_H][MT9V03X_W]);
 void Draw_Track_Boundary();
 void Longest_White_Column();
 void adaptiveThreshold(uint8_t* img_data, uint8_t* output_data, int width, int height, int block, uint8_t clip_value);
-void maze_left(int block_size, int clip_value,int x, int y, int pts[][2]);
-void maze_right(int block_size, int clip_value, int x, int y, int pts[][2]);
-void mark_path(int pts[][2], int num_points);
-void find_xy();
-void find_xy_enhanced() ;
 void Left_Add_Line(int x1,int y1,int x2,int y2);
 void Right_Add_Line(int x1,int y1,int x2,int y2);
 void Lengthen_Left_Boundry(int start,int end);
@@ -78,4 +73,5 @@ void Lengthen_Right_Boundry(int start,int end);
 void Find_Down_Point(int start,int end);
 void Find_Up_Point(int start,int end);
 void draw_mid_line();
+void draw_boundary_lines(void);
 #endif
