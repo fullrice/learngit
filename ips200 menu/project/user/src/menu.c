@@ -507,8 +507,8 @@ void Camera_show()//22
 	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
 	lcd_showstr(0,110,"speed_err");
 	lcd_showint(100,110, my_control.speed_lasterrL , 5);
-	lcd_showstr(0,130,"pwml");
-	lcd_showint(100,130, my_control.pwm_l , 5);
+	lcd_showstr(0,130,"add");
+	lcd_showint(100,130, my_order.add , 5);
 	lcd_showstr(0,90,"pwm2");
 	lcd_showint(100,90, my_control.pwm_r  , 5);
 	lcd_showstr(0,150,"err");
@@ -536,13 +536,15 @@ void Camera_show()//22
  if(gpio_get_level(key_up)== 0)
     {
         my_control.D_DIRE+=1;
+			//	my_order.add++;
 			//my_control.P_DIRE+=10;
 			  delay_ms(200);
         lcd_clear();
     }
 		 if(gpio_get_level(key_down)== 0)
     {
-         my_control.D_DIRE-=1;
+        my_control.D_DIRE-=1;
+			//	my_order.add--;
 		//	my_control.P_DIRE-=10;
 			  delay_ms(200);
         lcd_clear();
@@ -579,15 +581,16 @@ void Cross_show()//22
 //	Draw_Track_Boundary();
  if(gpio_get_level(key_up)== 0)
     {
-        my_control.D_DIRE+=1;
+     //   my_control.D_DIRE+=1;
 		//	my_control.P_DIRE+=10;
+		//	my_order.add++;
 			  delay_ms(200);
         lcd_clear();
     }
 		 if(gpio_get_level(key_down)== 0)
-    {
-         my_control.D_DIRE-=1;
+    {//    my_control.D_DIRE-=1;
 		//	my_control.P_DIRE-=10;
+		//	my_order.add--;
 			  delay_ms(200);
         lcd_clear();
     }

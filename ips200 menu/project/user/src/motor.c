@@ -1,5 +1,7 @@
 #include "motor.h"
 #include "image.h"
+#include "control.h"
+
 #include <math.h>
 #define PB  6
 #define PM  5
@@ -44,7 +46,7 @@ const uint8 Weight[MT9V03X_H]=
 	      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端40 ——49 行权重
        1, 1, 1, 1, 1, 1, 1, 1, 1, 1  ,              //图像最远端50 ——59 行权重
-       1, 1, 1, 1  ,19,17,15,13,13 ,               //图像最远端60 ——69 行权重
+       1, 1, 1, 1  ,1,15  ,91,15,1,               //图像最远端60 ——69 行权重
 };
 //const uint8 Weight[MT9V03X_H]=
 //{
@@ -94,17 +96,17 @@ const uint8 Weight[MT9V03X_H]=
 //};
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 210,
-    .Speed_Right_Set = 210,
+    .Speed_Left_Set = 220,
+    .Speed_Right_Set = 220,
     .Straight_Speed = 0,
     .err = 0.0f,//左正右负，并且保证向左转的时候左轮小于右轮，那么
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -30   ,//-13 -25
-    .D_DIRE = 0  ,
-    .P_SPEED=5.69  , //5.69
-    .I_SPEED =0, //0.1
+    .P_DIRE = -25   ,//-13 -25
+    .D_DIRE = -0.1  ,
+    .P_SPEED=5.69 , //5.69
+    .I_SPEED =0  , //0.1
 	  .pwm_l=0.0f,
 	  .pwm_r=0.0f,
 	  .encoderl=0,//1300
@@ -689,16 +691,33 @@ float my_abs(float x) {
 -------------------------------------------------------------------------------------------------------------------*/
 void PID_DIR(int offset) {
    // PD计算（位置式）
-	if(my_abs(my_control.err)>=13)
-	{
-	   my_control.P_DIRE=-35          ;
-	 	my_control.Speed_Right_Set=my_control.Speed_Left_Set  ;
-	}
-	else
-	{
-	   my_control.P_DIRE=-30;
-		my_control.Speed_Right_Set=my_control.Speed_Left_Set;
-	}
+//	if(my_abs(my_control.err)>=40)
+//	{
+//	   my_control.P_DIRE=-20          ;
+//		 my_control.D_DIRE=0  -my_order.add*0.1;
+//	 	my_control.Speed_Right_Set=my_control.Speed_Left_Set-10  ;
+//	}
+//	else if (my_abs(my_control.err)>=30)
+//	{
+//	   my_control.P_DIRE=-45;
+//		my_control.D_DIRE=0-my_order.add*0.2;
+//		my_control.Speed_Right_Set=my_control.Speed_Left_Set-5;
+//	}
+	
+//	else 
+//		if (my_abs(my_control.err)>=15)
+//	{
+//	   my_control.P_DIRE=-35  ;
+//		my_control.D_DIRE=0-my_order.add*0.1;
+//		my_control.Speed_Right_Set=my_control.Speed_Left_Set-30;
+//	}
+//	else
+//	{
+//	   my_control.P_DIRE=-30;
+//		my_control.D_DIRE=0;
+//		my_control.Speed_Right_Set=my_control.Speed_Left_Set;
+//	
+//	}
 //	if(my_control.err>20 || my_control.err<=-20)
 //	{ 
 //	     my_control.P_DIRE=-40;

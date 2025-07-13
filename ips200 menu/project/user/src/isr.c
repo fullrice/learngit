@@ -283,10 +283,10 @@ void TIM7_IRQHandler (void)
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 				 Longest_White_Column();
-		//		 my_control.err= err_sum_average(25,30);
+		 my_control.err= err_sum_average(40,45);
 			//	 Cross_Detect(); 
 			//  	 draw_boundary_lines();
-	   		 my_control.err=Err_Sum()*1.1;
+	   	//	 my_control.err=Err_Sum()*1.1;
 				
 				
 				

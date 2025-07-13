@@ -99,8 +99,8 @@ void all_init(void)
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
 	    pit_ms_init(TIM6_PIT, 10);//
-			pit_ms_init(TIM7_PIT, 20);//图像
-	 		pit_ms_init(TIM2_PIT, 20);//
+			pit_ms_init(TIM7_PIT, 15);//图像
+	 		pit_ms_init(TIM2_PIT, 5);//速度方向，可以适当增加·
       interrupt_set_priority(TIM6_IRQn, 1);
 			interrupt_set_priority(TIM7_IRQn, 2);
 			interrupt_set_priority(TIM2_IRQn, 3);

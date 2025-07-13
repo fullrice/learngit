@@ -9,7 +9,8 @@ order my_order={
 	.island=0,
   .count_2s=0,
 	.black=0,
-	.start=0
+	.start=0,
+	.add=0
 };
 uint32 key1_count;
 uint32 key2_count;

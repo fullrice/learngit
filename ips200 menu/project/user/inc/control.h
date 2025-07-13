@@ -10,6 +10,7 @@ typedef struct {
 	volatile int time;
 	volatile int count_2s;
 	volatile int black; 
+	volatile int add; 
 }order;
 typedef struct {
    volatile int right_down_line;//右下角点
