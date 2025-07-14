@@ -4,13 +4,14 @@
 #include <math.h>
 
 order my_order={
-  .go=1 ,
+  .go=0 ,
 	.cross=0,
 	.island=0,
   .count_2s=0,
 	.black=0,
 	.start=0,
-	.add=0
+	.add=0,
+	.zebra=0
 };
 uint32 key1_count;
 uint32 key2_count;
@@ -139,6 +140,33 @@ void Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角
     }
     my_island.right_down_line=right_down_line;
 }
+
+/*
+ * 斑马线检测函数，检测屏幕黑白跳变数，阈值可调，也要注意判断范围，近车靠头还是远离车头
+ */
+void Zebra_Detect(void)
+{
+    int i,j;
+    int change=0;
+    for(i=38;i>=35;i--)
+    {
+        for(j=10;j<=100;j++)
+        {
+            if(my_image.image_two_value[i][j+1]-my_image.image_two_value[i][j]!=0)
+            {
+                change++;
+            }
+        }
+    }
+   // lcd_showint16(100,6,change);
+    if(change>=20)
+    {
+ 
+			my_order.zebra=1;  //遇上斑马线了
+    }
+   
+}
+
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     右赛道连续性检测
   @param     起始点，终止点
@@ -146,31 +174,77 @@ void Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角
   Sample     continuity_change_flag=Continuity_Change_Right(int start,int end)
   @note      连续性的阈值设置为5，可更改
 -------------------------------------------------------------------------------------------------------------------*/
-//int Continuity_Change_Right(int start,int end)
-//{
-//    int i;
-//    int t;
-//    int continuity_change_flag=0;
-//    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没必要判断了
-//       return 1;
-//    if(start>=MT9V03X_H-5)//数组越界保护
-//        start=MT9V03X_H-5;
-//    if(end<=5)
-//       end=5;
-//    if(start<end)//都是从下往上计算的，反了就互换一下
-//    {
-//       t=start;
-//       start=end;
-//       end=t;
-//    }
-// 
-//    for(i=start;i>=end;i--)
-//    {
-//        if(abs(Right_Line[i]-Right_Line[i-1])>=5)//连续性阈值是5，可更改
-//       {
-//            continuity_change_flag=i;
-//            break;
-//       }
-//    }
-//    return continuity_change_flag;
-//}
+void Continuity_Change_Right(int start,int end)
+{
+    int i;
+    int t;
+    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没必要判断了
+		{
+			  my_image.continuity_change_flag=0;
+		}
+    if(start>=MT9V03X_H-5)//数组越界保护
+        start=MT9V03X_H-5;
+    if(end<=5)
+       end=5;
+    if(start<end)//都是从下往上计算的，反了就互换一下
+    {
+       t=start;
+       start=end;
+       end=t;
+    }
+ 
+    for(i=start;i>=end;i--)
+    {
+        if(abs(my_image.Right_Line[i]-my_image.Right_Line[i-1])>=5)//连续性阈值是5，可更改
+       {
+            my_image.continuity_change_flag=i;
+            break;
+       }
+    }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     单调性突变检测
+  @param     起始点，终止行
+  @return    点所在的行数，找不到返回0
+  Sample     Find_Right_Up_Point(int start,int end);
+  @note      前5后5它最大（最小），那他就是角点
+-------------------------------------------------------------------------------------------------------------------*/
+void Monotonicity_Change_Right(int start,int end)//单调性改变，返回值是单调性改变点所在的行数
+{
+    int i;
+    int temp;
+    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没有单调性判断的意义
+		{
+        my_island.monotonicity_change_line=0;
+		}
+    if(start>=MT9V03X_H-1-5)//数组越界保护
+        start=MT9V03X_H-1-5;
+     if(end<=5)
+        end=5;
+    if(start<=end)
+      temp=end;
+		   end=start;
+		   start=temp;
+        my_island.monotonicity_change_line=0;
+    for(i=start;i>=end;i--)//会读取前5后5数据，所以前面对输入范围有要求
+    {
+        if(my_image.Right_Line[i]==my_image.Right_Line[i+5]&&my_image.Right_Line[i]==my_image.Right_Line[i-5]&&
+        my_image.Right_Line[i]==my_image.Right_Line[i+4]&&my_image.Right_Line[i]==my_image.Right_Line[i-4]&&
+        my_image.Right_Line[i]==my_image.Right_Line[i+3]&&my_image.Right_Line[i]==my_image.Right_Line[i-3]&&
+        my_image.Right_Line[i]==my_image.Right_Line[i+2]&&my_image.Right_Line[i]==my_image.Right_Line[i-2]&&
+        my_image.Right_Line[i]==my_image.Right_Line[i+1]&&my_image.Right_Line[i]==my_image.Right_Line[i-1])
+        {//一堆数据一样，显然不能作为单调转折点
+            continue;
+        }
+        else if(my_image.Right_Line[i] <my_image.Right_Line[i+5]&&my_image.Right_Line[i] <my_image.Right_Line[i-5]&&
+        my_image.Right_Line[i] <my_image.Right_Line[i+4]&&my_image.Right_Line[i] <my_image.Right_Line[i-4]&&
+        my_image.Right_Line[i]<=my_image.Right_Line[i+3]&&my_image.Right_Line[i]<=my_image.Right_Line[i-3]&&
+        my_image.Right_Line[i]<=my_image.Right_Line[i+2]&&my_image.Right_Line[i]<=my_image.Right_Line[i-2]&&
+        my_image.Right_Line[i]<=my_image.Right_Line[i+1]&&my_image.Right_Line[i]<=my_image.Right_Line[i-1])
+        {//就很暴力，这个数据是在前5，后5中最大的，那就是单调突变点
+            my_island.monotonicity_change_line=i;
+            break;
+        }
+    }
+   
+}

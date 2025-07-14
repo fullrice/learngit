@@ -103,8 +103,8 @@ control my_control = {
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -35     ,//-13 -25 -38
-    .D_DIRE = -0.2  , //-0.2
+    .P_DIRE = -36     ,//-13 -25 -38
+    .D_DIRE = -0.3  , //-0.2
     .P_SPEED=5.69 , //5.69
     .I_SPEED =0  , //0.1
 	  .pwm_l=0.0f,
@@ -740,3 +740,76 @@ void PID_DIR(int offset) {
 	 {my_control.steer_output =DIFF_MIN ;}
   
 }
+
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     通过斜率，定点补线--
+  @param     k       输入斜率
+             startY  输入起始点纵坐标
+             endY    结束点纵坐标
+  @return    null
+  Sample     K_Add_Boundry_Left(float k,int startY,int endY);
+  @note      补得线直接贴在边线上
+-------------------------------------------------------------------------------------------------------------------*/
+//void K_Add_Boundry_Left(float k,int startX,int startY,int endY)
+//{
+//    int i,t;
+//    if(startY>=MT9V03X_H-1)
+//        startY=MT9V03X_H-1;
+//    else if(startY<=0)
+//        startY=0;
+//    if(endY>=MT9V03X_H-1)
+//        endY=MT9V03X_H-1;
+//    else if(endY<=0)
+//        endY=0;
+//    if(startY<endY)//--操作，start需要大
+//    {
+//        t=startY;
+//        startY=endY;
+//        endY=t;
+//    }
+////这里有bug，下方循环--循环，需要start要大，只进行y的互换，但是没有进行x的互换
+////建议进行判断，如果start更小，那就进行++访问
+////这里修改各位自行操作
+//    for(i=startY;i>=endY;i--)
+//    {
+//        Left_Line[i]=(int)((i-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+//        if(Left_Line[i]>=MT9V03X_W-1)
+//        {
+//            Left_Line[i]=MT9V03X_W-1;
+//        }
+//        else if(Left_Line[i]<=0)
+//        {
+//            Left_Line[i]=0;
+//        }
+//    }
+//}
+
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     根据斜率划线
+  @param     输入斜率，定点，画一条黑线
+  @return    null
+  Sample     K_Draw_Line(k, 20,MT9V03X_H-1 ,0)
+  @note      补的就是一条线，需要重新扫线
+-------------------------------------------------------------------------------------------------------------------*/
+//void K_Draw_Line(float k, int startX, int startY,int endY)
+//{
+//    int endX=0;
+// 
+//    if(startX>=MT9V03X_W-1)//限幅处理
+//        startX=MT9V03X_W-1;
+//    else if(startX<=0)
+//        startX=0;
+//    if(startY>=MT9V03X_H-1)
+//        startY=MT9V03X_H-1;
+//    else if(startY<=0)
+//        startY=0;
+//    if(endY>=MT9V03X_H-1)
+//        endY=MT9V03X_H-1;
+//    else if(endY<=0)
+//        endY=0;
+//    endX=(int)((endY-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+//    Draw_Line(startX,startY,endX,endY);
+
+//}

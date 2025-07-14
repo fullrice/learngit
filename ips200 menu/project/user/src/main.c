@@ -135,7 +135,7 @@ int main(void)
        //     pwm_set_duty(PWM_L, 50 * (PWM_DUTY_MAX / 100));                   // 计算占空比
             Camera_show();
      //       Motor_Left(2000);
-       
+       Zebra_Detect();
         system_delay_ms(50);
         // 此处编写需要循环执行的代码
     }

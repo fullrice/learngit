@@ -84,19 +84,19 @@ void TIM2_IRQHandler (void)
 						my_order.black++;
 				 }
 			}
-			if(my_order.black>=50)
+			if(my_order.black>=60)
 			{
 			   my_order.go=0;
 			//	my_order.black=0;
 			}
 			else
 			{
-			   my_order.go=1;
+			//   my_order.go=1;
 			//	my_order.black=0;
 			
 			}
-				
-	if(my_order.go==1 )
+		//Zebra_Detect();		
+	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
 	  PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
   //    PID_DIR(5);	
@@ -284,6 +284,7 @@ void TIM7_IRQHandler (void)
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 				 Longest_White_Column();
+				// Zebra_Detect();	
 		 my_control.err= err_sum_average(35,40);
 			//	 Cross_Detect(); 
 			//  	 draw_boundary_lines();

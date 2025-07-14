@@ -52,6 +52,7 @@ typedef struct
 		volatile int Right_Down_Find;
 		volatile int Right_Up_Find;
 		volatile int cross_count;
+		volatile int continuity_change_flag;
 } Image;
 
 // 声明全局的结构体变量
@@ -74,4 +75,5 @@ void Find_Down_Point(int start,int end);
 void Find_Up_Point(int start,int end);
 void draw_mid_line();
 void draw_boundary_lines(void);
+void draw_boundary_lines_wide(void);
 #endif

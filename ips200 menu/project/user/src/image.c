@@ -579,6 +579,36 @@ void draw_boundary_lines(void) {
             ips200_draw_point(my_image.Right_Line[y], y, RGB565_BLUE);
         }
     }
+		
+}
+void draw_boundary_lines_wide(void) {
+    for (int y = 0; y < MT9V03X_H; y++) {
+        // 画左边界点（Left_Line[y]）及左右相邻点
+        if (my_image.Left_Line[y] >= 0 && my_image.Left_Line[y] < MT9V03X_W) {
+            ips200_draw_point(my_image.Left_Line[y], y, RGB565_BLUE);
+            // 向左扩展一个像素
+            if (my_image.Left_Line[y] > 0) {
+                ips200_draw_point(my_image.Left_Line[y] - 1, y, RGB565_BLUE);
+            }
+            // 向右扩展一个像素
+            if (my_image.Left_Line[y] < MT9V03X_W - 1) {
+                ips200_draw_point(my_image.Left_Line[y] + 1, y, RGB565_BLUE);
+            }
+        }
+        
+        // 画右边界点（Right_Line[y]）及左右相邻点
+        if (my_image.Right_Line[y] >= 0 && my_image.Right_Line[y] < MT9V03X_W) {
+            ips200_draw_point(my_image.Right_Line[y], y, RGB565_BLUE);
+            // 向左扩展一个像素
+            if (my_image.Right_Line[y] > 0) {
+                ips200_draw_point(my_image.Right_Line[y] - 1, y, RGB565_BLUE);
+            }
+            // 向右扩展一个像素
+            if (my_image.Right_Line[y] < MT9V03X_W - 1) {
+                ips200_draw_point(my_image.Right_Line[y] + 1, y, RGB565_BLUE);
+            }
+        }
+    }
 }
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     找下面的两个拐点，供十字使用
