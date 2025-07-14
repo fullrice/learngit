@@ -518,7 +518,7 @@ void Camera_show()//22
 		lcd_showstr(0,190,"d");
 	lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
 		lcd_showstr(0,210,"set_speed");
-	lcd_showint(100,210, my_control.Speed_Left_Set , 5);
+	lcd_showint(100,210, my_control.Speed_Right_Set , 5);
 		lcd_showstr(0,230,"speed_L");
 	lcd_showint(100,230, my_control.encoderl , 5);
 		lcd_showstr(0,250,"speed_R");
@@ -535,7 +535,7 @@ void Camera_show()//22
 //	Draw_Track_Boundary();
  if(gpio_get_level(key_up)== 0)
     {
-        my_control.D_DIRE+=1;
+        my_control.D_DIRE-=0.1;
 			//	my_order.add++;
 			//my_control.P_DIRE+=10;
 			  delay_ms(200);
@@ -543,18 +543,19 @@ void Camera_show()//22
     }
 		 if(gpio_get_level(key_down)== 0)
     {
-        my_control.D_DIRE-=1;
+     //   my_control.D_DIRE-=0.1;
 			//	my_order.add--;
-		//	my_control.P_DIRE-=10;
+			my_control.P_DIRE-=1;
 			  delay_ms(200);
         lcd_clear();
     }
-//	 if(gpio_get_level(key_return)== 0)
-//    {
-//        delay_ms(200);
-//        lcd_clear();
-//        page=1;
-//    }
+	 if(gpio_get_level(key_enter)== 0)
+    {
+			 my_control.Speed_Right_Set +=10;
+        delay_ms(200);
+        lcd_clear();
+        
+    }
 	 if(gpio_get_level(key_return)== 0)
     {   
 			

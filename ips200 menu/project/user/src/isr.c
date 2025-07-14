@@ -38,7 +38,7 @@
 #include "image.h"
 #include "control.h"
 extern float speed_mps1;
-extern float speed_mps2; 
+extern float speed_mps2;   
 extern int count_2s;
 extern int count_10s;
 int Threshold=0;
@@ -284,7 +284,7 @@ void TIM7_IRQHandler (void)
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 				 Longest_White_Column();
-		 my_control.err= err_sum_average(40,45);
+		 my_control.err= err_sum_average(35,40);
 			//	 Cross_Detect(); 
 			//  	 draw_boundary_lines();
 	   	//	 my_control.err=Err_Sum()*1.1;
