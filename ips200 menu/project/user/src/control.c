@@ -13,6 +13,13 @@ order my_order={
 	.add=0,
 	.zebra=0
 };
+island my_island={
+  .right_down_line=0,
+	.island_state=0,
+	.monotonicity_change_line={0},
+	.k=0,
+  .point={0}//单调点的情况
+};
 uint32 key1_count;
 uint32 key2_count;
 uint32 key3_count;
@@ -23,7 +30,7 @@ uint8  key3_flag;
 uint8  key4_flag;
 uint32 count_time;
 
-island my_island={0};
+
 
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     十字检测
@@ -97,8 +104,81 @@ void Cross_Detect()
 //    ips200_showuint8(100,13,Right_Down_Find);
 }
 
+/*
+状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点，进入状态一
+状态一，判断为拐点消失，右下角的丢线很下，找到单调点过于向下，进入状态二
+状态二，判断为最短白列太短，并且找到上角点进行补线，此时可以进入状态三
 
 
+
+
+
+
+
+*/
+void island_detect()
+{
+	//左右，连续性
+   Continuity_Change_Right(MT9V03X_H-1-5,10);
+   Continuity_Change_Left(MT9V03X_H-1-5,10);
+	if(my_island.island_state==0)//此时是状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点
+	 {
+	   Continuity_Change_Right(MT9V03X_H-1-5,10);
+     Continuity_Change_Left(MT9V03X_H-1-5,10);
+	 //  Monotonicity_Change_Right(MT9V03X_H-1-5,10);//搜索行，可以适当调近  //找到右下拐点，算是进入状态一
+		 if( my_image.continuity_change_flag_left==0&& //右环岛左边是连续的
+         my_image.continuity_change_flag_right!=1&& //右边是不连续的
+               my_image.Right_Lost_Counter>=10&&           //右丢线多
+               my_image.Right_Lost_Counter<=50&&           //右丢线不能太多
+               my_image.Left_Lost_Counter<=10&&            //左丢线少
+               my_image.Search_Stop_Line>=MT9V03X_H*0.95&& //搜索截止行看到很远
+               my_image.Boundry_Start_Left>=MT9V03X_H-20&&my_image.Boundry_Start_Right>=MT9V03X_H-20&& //边界起始点靠下
+               my_image.Both_Lost_Counter<=10)
+            {
+                Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+                if(my_island.right_down_line>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
+                {
+                    my_island.island_state=1;//进入状态一
+                }
+                else
+                {
+                    my_island.island_state=0;
+                }
+            }
+						
+	   if(my_island.island_state==1)  //拐点消失
+        {
+           Monotonicity_Change_Right(70,10);//找角点
+           my_island.monotonicity_change_line[1]=my_image.Left_Line[my_island.monotonicity_change_line[0]];//角点的行列
+           Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+            if(my_island.monotonicity_change_line[0]>=70)//找到的单调点过于向下，开始进入
+            {
+                my_island.island_state =2;
+            }
+        }
+		 if(my_island.island_state==2)//2状态下方丢线，上方即将出现大弧线
+        {
+        //    Monotonicity_Change_Right(70,10);//单调性改变
+        //    my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];
+    //       Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+//            if(Island_State==2&&(Boundry_Start_Right>=MT9V03X_H-10))//右下角再不丢线进3
+					 my_island.point[0]=my_image.shortest_White_Column_Left[1];//列
+					 my_island.point[1]=my_image.white_line[my_island.point[0]];//根据列找行
+					
+            if(my_image.shortest_White_Column_Left[0]<=10)//最短白列太短
+            {
+							     my_island.island_state =3;
+              
+							
+            }
+        }
+
+        
+		
+		 
+	 }
+
+}
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     右下角点检测
   @param     起始点，终止点
@@ -148,7 +228,7 @@ void Zebra_Detect(void)
 {
     int i,j;
     int change=0;
-    for(i=38;i>=35;i--)
+    for(i=70;i>=68;i--)
     {
         for(j=10;j<=100;j++)
         {
@@ -159,7 +239,7 @@ void Zebra_Detect(void)
         }
     }
    // lcd_showint16(100,6,change);
-    if(change>=20)
+    if(change>=10)
     {
  
 			my_order.zebra=1;  //遇上斑马线了
@@ -180,7 +260,7 @@ void Continuity_Change_Right(int start,int end)
     int t;
     if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没必要判断了
 		{
-			  my_image.continuity_change_flag=0;
+			  my_image.continuity_change_flag_right=0;
 		}
     if(start>=MT9V03X_H-5)//数组越界保护
         start=MT9V03X_H-5;
@@ -195,12 +275,48 @@ void Continuity_Change_Right(int start,int end)
  
     for(i=start;i>=end;i--)
     {
-        if(abs(my_image.Right_Line[i]-my_image.Right_Line[i-1])>=5)//连续性阈值是5，可更改
+        if(abs(my_image.Right_Line[i]-my_image.Right_Line[i-5])>=5)//连续性阈值是5，可更改
        {
-            my_image.continuity_change_flag=i;
+            my_image.continuity_change_flag_right=i;
             break;
        }
     }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左赛道连续性检测
+  @param     起始点，终止点
+  @return    连续返回0，不连续返回断线出行数
+  Sample     Continuity_Change_Left(int start,int end);
+  @note      连续性的阈值设置为5，可更改
+-------------------------------------------------------------------------------------------------------------------*/
+void Continuity_Change_Left(int start,int end)//连续性阈值设置为5
+{
+    int i;
+    int t;
+    if(my_image.Both_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没必要判断了
+       my_image.continuity_change_flag_left=0;
+    if(my_image.Search_Stop_Line<=5)//搜所截止行很矮
+       my_image.continuity_change_flag_left=0;
+    if(start>=MT9V03X_H-1-5)//数组越界保护
+        start=MT9V03X_H-1-5;
+    if(end<=5)
+       end=5;
+    if(start<end)//都是从下往上计算的，反了就互换一下
+    {
+       t=start;
+       start=end;
+       end=t;
+    }
+    
+    for(i=start;i>=end;i--)
+    {
+       if(abs(my_image.Left_Line[i]-my_image.Left_Line[i-1])>=5)//连续判断阈值是5,可更改
+       {
+            my_image.continuity_change_flag_left=i;
+            break;
+       }
+    }
+
 }
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     单调性突变检测
@@ -209,14 +325,15 @@ void Continuity_Change_Right(int start,int end)
   Sample     Find_Right_Up_Point(int start,int end);
   @note      前5后5它最大（最小），那他就是角点
 -------------------------------------------------------------------------------------------------------------------*/
-void Monotonicity_Change_Right(int start,int end)//单调性改变，返回值是单调性改变点所在的行数
+//找角点
+void Monotonicity_Change_Right(int start,int end)//单调性改变，返回值是单调性改变点所在的行数,从下到上
 {
     int i;
     int temp;
-    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没有单调性判断的意义
-		{
-        my_island.monotonicity_change_line=0;
-		}
+//    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没有单调性判断的意义
+//		{
+//        my_island.monotonicity_change_line[0]=0;
+//		}
     if(start>=MT9V03X_H-1-5)//数组越界保护
         start=MT9V03X_H-1-5;
      if(end<=5)
@@ -225,26 +342,200 @@ void Monotonicity_Change_Right(int start,int end)//单调性改变，返回值�
       temp=end;
 		   end=start;
 		   start=temp;
-        my_island.monotonicity_change_line=0;
+
     for(i=start;i>=end;i--)//会读取前5后5数据，所以前面对输入范围有要求
     {
-        if(my_image.Right_Line[i]==my_image.Right_Line[i+5]&&my_image.Right_Line[i]==my_image.Right_Line[i-5]&&
-        my_image.Right_Line[i]==my_image.Right_Line[i+4]&&my_image.Right_Line[i]==my_image.Right_Line[i-4]&&
-        my_image.Right_Line[i]==my_image.Right_Line[i+3]&&my_image.Right_Line[i]==my_image.Right_Line[i-3]&&
-        my_image.Right_Line[i]==my_image.Right_Line[i+2]&&my_image.Right_Line[i]==my_image.Right_Line[i-2]&&
-        my_image.Right_Line[i]==my_image.Right_Line[i+1]&&my_image.Right_Line[i]==my_image.Right_Line[i-1])
-        {//一堆数据一样，显然不能作为单调转折点
-            continue;
-        }
-        else if(my_image.Right_Line[i] <my_image.Right_Line[i+5]&&my_image.Right_Line[i] <my_image.Right_Line[i-5]&&
-        my_image.Right_Line[i] <my_image.Right_Line[i+4]&&my_image.Right_Line[i] <my_image.Right_Line[i-4]&&
-        my_image.Right_Line[i]<=my_image.Right_Line[i+3]&&my_image.Right_Line[i]<=my_image.Right_Line[i-3]&&
-        my_image.Right_Line[i]<=my_image.Right_Line[i+2]&&my_image.Right_Line[i]<=my_image.Right_Line[i-2]&&
-        my_image.Right_Line[i]<=my_image.Right_Line[i+1]&&my_image.Right_Line[i]<=my_image.Right_Line[i-1])
+     
+//        if(my_image.Right_Line[i] <my_image.Right_Line[i+5]&&my_image.Right_Line[i] <my_image.Right_Line[i-5]&&
+//        my_image.Right_Line[i] <my_image.Right_Line[i+4]&&my_image.Right_Line[i] <my_image.Right_Line[i-4]&&
+//        my_image.Right_Line[i]<=my_image.Right_Line[i+3]&&my_image.Right_Line[i]<=my_image.Right_Line[i-3]&&
+//        my_image.Right_Line[i]<=my_image.Right_Line[i+2]&&my_image.Right_Line[i]<=my_image.Right_Line[i-2]&&
+//        my_image.Right_Line[i]<=my_image.Right_Line[i+1]&&my_image.Right_Line[i]<=my_image.Right_Line[i-1])
+//        {//就很暴力，这个数据是在前5，后5中最大的，那就是单调突变点
+//            my_island.monotonicity_change_line[0]=i;
+//            break;
+//        }
+		//  	 my_image.Right_Line[i]<my_image.Right_Line[i+12]&&my_image.Right_Line[i] <my_image.Right_Line[i-10]
+			// my_image.Right_Line[i]<=my_image.Right_Line[i+10]&&my_image.Right_Line[i]<=my_image.Right_Line[i-8]&&
+			//my_image.Right_Line[i]<=my_image.Right_Line[i+8]&&my_image.Right_Line[i]<=my_image.Right_Line[i-6]&&
+				 if( my_image.Right_Line[i]<=my_image.Right_Line[i+5]&&my_image.Right_Line[i]<=my_image.Right_Line[i-4])
         {//就很暴力，这个数据是在前5，后5中最大的，那就是单调突变点
-            my_island.monotonicity_change_line=i;
+            my_island.monotonicity_change_line[0]=i;
             break;
         }
     }
    
 }
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     通过斜率，定点补线
+  @param     k       输入斜率
+             startY  输入起始点纵坐标
+             endY    结束点纵坐标
+  @return    null    直接补边线
+  Sample     K_Add_Boundry_Right(float k,int startY,int endY);
+  @note      补得线直接贴在边线上
+-------------------------------------------------------------------------------------------------------------------*/
+void K_Add_Boundry_Right(float k,int startX,int startY,int endY)
+{
+    int i,t;
+    if(startY>=MT9V03X_H-1)
+        startY=MT9V03X_H-1;
+    else if(startY<=0)
+        startY=0;
+    if(endY>=MT9V03X_H-1)
+        endY=MT9V03X_H-1;
+    else if(endY<=0)
+        endY=0;
+    if(startY<endY)
+    {
+        t=startY;
+        startY=endY;
+        endY=t;
+    }
+    for(i=startY;i>=endY;i--)
+    {
+        my_image.Right_Line[i]=(int)((i-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+        if(my_image.Right_Line[i]>=MT9V03X_W-1)
+        {
+            my_image.Right_Line[i]=MT9V03X_W-1;
+        }
+        else if(my_image.Right_Line[i]<=0)
+        {
+            my_image.Right_Line[i]=0;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     画线
+  @param     输入起始点，终点坐标，补一条宽度为2的黑线
+  @return    null
+  Sample     Draw_Line(0, 0,MT9V03X_W-1,MT9V03X_H-1);
+             Draw_Line(MT9V03X_W-1, 0,0,MT9V03X_H-1);
+                                    画一个大×
+  @note     补的就是一条线，需要重新扫线
+-------------------------------------------------------------------------------------------------------------------*/
+void Draw_Line(int startX, int startY, int endX, int endY)
+{
+    int i,x,y;
+    int start=0,end=0;
+    if(startX>=MT9V03X_W-1)//限幅处理
+        startX=MT9V03X_W-1;
+    else if(startX<=0)
+        startX=0;
+    if(startY>=MT9V03X_H-1)
+        startY=MT9V03X_H-1;
+    else if(startY<=0)
+        startY=0;
+    if(endX>=MT9V03X_W-1)
+        endX=MT9V03X_W-1;
+    else if(endX<=0)
+        endX=0;
+    if(endY>=MT9V03X_H-1)
+        endY=MT9V03X_H-1;
+    else if(endY<=0)
+        endY=0;
+    if(startX==endX)//一条竖线
+    {
+        if (startY > endY)//互换
+        {
+            start=endY;
+            end=startY;
+        }
+        for (i = start; i <= end; i++)
+        {
+            if(i<=1)
+                i=1;
+            my_image.image_two_value[i][startX]=IMG_BLACK;
+            my_image.image_two_value[i-1][startX]=IMG_BLACK;
+        }
+    }
+    else if(startY == endY)//补一条横线
+    {
+        if (startX > endX)//互换
+        {
+            start=endX;
+            end=startX;
+        }
+        for (i = start; i <= end; i++)
+        {
+            if(startY<=1)
+                startY=1;
+            my_image.image_two_value[startY][i]=IMG_BLACK;
+            my_image.image_two_value[startY-1][i]=IMG_BLACK;
+        }
+    }
+    else //上面两个是水平，竖直特殊情况，下面是常见情况
+    {
+			if(startY>endY)//起始点矫正 从上到下
+        {
+            start=endY;
+            end=startY;
+        }
+        else
+        {
+            start=startY;
+            end=endY;
+        }
+        for (i = start; i <= end; i++)//纵向补线，保证每一行都有黑点
+        {
+            x =(int)(startX+(endX-startX)*(i-startY)/(endY-startY));//两点式变形
+            if(x>=MT9V03X_W-1)
+                x=MT9V03X_W-1;
+            else if (x<=1)
+                x=1;
+            my_image.image_two_value[i][x] = IMG_BLACK;
+            my_image.image_two_value[i][x-1] = IMG_BLACK;
+        }
+        if(startX>endX)
+        {
+            start=endX;
+            end=startX;
+        }
+        else
+        {
+            start=startX;
+            end=endX;
+        }
+        for (i = start; i <= end; i++)//横向补线，保证每一列都有黑点
+        {
+ 
+            y =(int)(startY+(endY-startY)*(i-startX)/(endX-startX));//两点式变形
+            if(y>=MT9V03X_H-1)
+                y=MT9V03X_H-1;
+            else if (y<=0)
+                y=0;
+            my_image.image_two_value[y][i] = IMG_BLACK;
+        }
+    }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     根据斜率划线
+  @param     输入斜率，定点，画一条黑线
+  @return    null
+  Sample     K_Draw_Line(k, 20,MT9V03X_H-1 ,0)
+  @note      补的就是一条线，需要重新扫线
+-------------------------------------------------------------------------------------------------------------------*/
+void K_Draw_Line(float k, int startX, int startY,int endY)
+{
+    int endX=0;
+ 
+    if(startX>=MT9V03X_W-1)//限幅处理
+        startX=MT9V03X_W-1;
+    else if(startX<=0)
+        startX=0;
+    if(startY>=MT9V03X_H-1)
+        startY=MT9V03X_H-1;
+    else if(startY<=0)
+        startY=0;
+    if(endY>=MT9V03X_H-1)
+        endY=MT9V03X_H-1;
+    else if(endY<=0)
+        endY=0;
+    endX=(int)((endY-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+    Draw_Line(startX,startY,endX,endY);
+}
+
+
+

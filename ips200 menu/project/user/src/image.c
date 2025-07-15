@@ -209,7 +209,7 @@ void Longest_White_Column()//最长白列巡线
     my_image.Longest_White_Column_Right[0] = 0;
     my_image.Longest_White_Column_Right[1] = 0;
     
-    // 数据清零
+    // 数据清零,初始化
     for (i = 0; i <= MT9V03X_H - 1; i++)
     {
         my_image.Right_Lost_Flag[i] = 0;
@@ -228,9 +228,14 @@ void Longest_White_Column()//最长白列巡线
         for (i = MT9V03X_H - 1; i >= 0; i--)
         {
             if (my_image.image_two_value[i][j] == IMG_BLACK)
+						{
+                my_image.white_line[j]=i;//记录每一列终止点的横坐标
                 break;
+						}
             else
+						{
                 my_image.White_Column[j]++;
+						}
         }
     }
     
@@ -238,10 +243,17 @@ void Longest_White_Column()//最长白列巡线
     my_image.Longest_White_Column_Left[0] = 0;
     for (i = start_column; i <= end_column; i++)
     {
+			//找长列
         if (my_image.Longest_White_Column_Left[0] < my_image.White_Column[i])
         {
             my_image.Longest_White_Column_Left[0] = my_image.White_Column[i];
             my_image.Longest_White_Column_Left[1] = i;
+        }
+				//找短列
+				if (my_image.shortest_White_Column_Left[0] > my_image.White_Column[i])
+        {
+            my_image.shortest_White_Column_Left[0] = my_image.White_Column[i];
+            my_image.shortest_White_Column_Left[1] = i;
         }
     }
     
@@ -249,10 +261,12 @@ void Longest_White_Column()//最长白列巡线
     my_image.Longest_White_Column_Right[0] = 0;
     for (i = end_column; i >= start_column; i--)
     {
+			 
         if (my_image.Longest_White_Column_Right[0] < my_image.White_Column[i])
         {
             my_image.Longest_White_Column_Right[0] = my_image.White_Column[i];
             my_image.Longest_White_Column_Right[1] = i;
+					
         }
     }
     
@@ -314,7 +328,7 @@ void Longest_White_Column()//最长白列巡线
         if (my_image.Right_Lost_Flag[i] == 1)
             my_image.Right_Lost_Counter++;
         if (my_image.Left_Lost_Flag[i] == 1 && my_image.Right_Lost_Flag[i] == 1)
-            my_image.Both_Lost_Counter++;
+            my_image.Both_Lost_Counter++;  
         if (my_image.Boundry_Start_Left == 0 && my_image.Left_Lost_Flag[i] != 1)
             my_image.Boundry_Start_Left = i;
         if (my_image.Boundry_Start_Right == 0 && my_image.Right_Lost_Flag[i] != 1)
@@ -369,50 +383,39 @@ void Left_Add_Line(int x1,int y1,int x2,int y2)//左补线,补的是边界
     }
 }
 
-/*-------------------------------------------------------------------------------------------------------------------
-  @brief     右补线
-  @param     补线的起点，终点
-  @return    null
-  Sample     Right_Add_Line(int x1,int y1,int x2,int y2);
-  @note      补的直接是边界，点最好是可信度高的，不要乱补
--------------------------------------------------------------------------------------------------------------------*/
-void Right_Add_Line(int x1,int y1,int x2,int y2)//右补线,补的是边界
+void Right_Add_Line(int x1, int y1, int x2, int y2) //右补线,补的是边界
 {
-    int i,max,a1,a2;
-    int hx;
-    if(x1>=MT9V03X_W-1)//起始点位置校正，排除数组越界的可能
-       x1=MT9V03X_W-1;
-    else if(x1<=0)
-        x1=0;
-    if(y1>=MT9V03X_H-1)
-        y1=MT9V03X_H-1;
-    else if(y1<=0)
-        y1=0;
-    if(x2>=MT9V03X_W-1)
-        x2=MT9V03X_W-1;
-    else if(x2<=0)
-        x2=0;
-    if(y2>=MT9V03X_H-1)
-        y2=MT9V03X_H-1;
-    else if(y2<=0)
-         y2=0;
-    a1=y1;
-    a2=y2;
-    if(a1>a2)//坐标互换
-    {
-        max=a1;
-        a1=a2;
-        a2=max;
+    // 参数校验
+    if (y1 == y2) {
+        // 水平线处理
+        int start_x = (x1 < x2) ? x1 : x2;
+        int end_x = (x1 < x2) ? x2 : x1;
+        start_x = (start_x < 0) ? 0 : start_x;
+        end_x = (end_x >= MT9V03X_W) ? MT9V03X_W-1 : end_x;
+        for (int x = start_x; x <= end_x; x++) {
+            my_image.Right_Line[y1] = x;
+        }
+        return;
     }
-    for(i=a1;i<=a2;i++)//根据斜率补线即可
-    {
-        hx=(i-y1)*(x2-x1)/(y2-y1)+x1;
-        if(hx>=MT9V03X_W-5)
-            hx=MT9V03X_W-5;
-        else if(hx<=0)
-            hx=4;
-        my_image.Right_Line[i]=hx;
-		//		ips200_draw_point ((uint16)hx, (uint16)i,RGB565_BLUE);
+
+    // 确保y1 < y2，同时交换对应的x坐标
+    if (y1 > y2) {
+        int temp = y1; y1 = y2; y2 = temp;
+        temp = x1; x1 = x2; x2 = temp;
+    }
+
+    // 边界检查
+    y1 = (y1 < 0) ? 0 : y1;
+    y2 = (y2 >= MT9V03X_H) ? MT9V03X_H-1 : y2;
+    
+    // 使用浮点运算避免精度丢失
+    float slope = (float)(x2 - x1) / (y2 - y1);
+    
+    for (int y = y1; y <= y2; y++) {
+        int hx = (int)(x1 + slope * (y - y1) + 0.5); // 四舍五入
+        hx = (hx < 0) ? 0 : hx;
+        hx = (hx >= MT9V03X_W) ? MT9V03X_W-1 : hx;
+        my_image.Right_Line[y] = hx;
     }
 }
 /*-------------------------------------------------------------------------------------------------------------------

@@ -29,7 +29,9 @@ typedef struct
 		volatile int Left_Lost_Counter;       //边界丢线数
 		volatile int Right_Lost_Counter;
 		volatile int Both_Lost_Counter;//两边同时丢线数
-
+    volatile int shortest_White_Column_Left[2];  // 左最长白列：[0]=长度, [1]=列号
+    //volatile int shortest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
+	  volatile int white_line[182];
     // 结构类变量
     int Longest_White_Column_Left[2];  // 左最长白列：[0]=长度, [1]=列号
     int Longest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
@@ -52,7 +54,8 @@ typedef struct
 		volatile int Right_Down_Find;
 		volatile int Right_Up_Find;
 		volatile int cross_count;
-		volatile int continuity_change_flag;
+		volatile int continuity_change_flag_left;
+		volatile int continuity_change_flag_right;
 } Image;
 
 // 声明全局的结构体变量

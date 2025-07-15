@@ -133,10 +133,13 @@ int main(void)
  //   	Motor_Right(my_control.pwm_r-my_control.steer_output);
         //    gpio_set_level(DIR_L, GPIO_HIGH);                                   // DIR输出高电平
        //     pwm_set_duty(PWM_L, 50 * (PWM_DUTY_MAX / 100));                   // 计算占空比
-            Camera_show();
+        //    Camera_show();
      //       Motor_Left(2000);
-       Zebra_Detect();
-        system_delay_ms(50);
+			      island_show();
+			  //    island_detect();
+			  //  Monotonicity_Change_Right(70,10);
+            Zebra_Detect();
+						system_delay_ms(50);
         // 此处编写需要循环执行的代码
     }
 }

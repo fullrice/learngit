@@ -84,7 +84,7 @@ void TIM2_IRQHandler (void)
 						my_order.black++;
 				 }
 			}
-			if(my_order.black>=60)
+			if(my_order.black>=50)
 			{
 			   my_order.go=0;
 			//	my_order.black=0;
@@ -98,7 +98,8 @@ void TIM2_IRQHandler (void)
 		//Zebra_Detect();		
 	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
-	  PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
+		
+		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
   //    PID_DIR(5);	
  //    Motor_Left(my_control.pwm_l+my_control.steer_output
 	   Motor_Left(my_control.pwm_l-my_control.steer_output);
@@ -169,6 +170,16 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
      my_order.count_2s++;
+	   if(my_order.count_2s>=0 && my_order.count_2s<=60)//1s
+					{
+					   my_control.Speed_Right_Set=420;
+					}
+					else
+					{
+					   my_control.Speed_Right_Set=250;
+					
+					}
+						
      my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
 	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
@@ -283,9 +294,25 @@ void TIM7_IRQHandler (void)
 	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-				 Longest_White_Column();
+			//   Longest_White_Column();
+		//		  draw_mid_line();
+   //     draw_boundary_lines_wide();
 				// Zebra_Detect();	
-		 my_control.err= err_sum_average(35,40);
+		       my_control.err= err_sum_average(35,40);  //35 40
+//				 	if(my_control.err>=15  || my_control.err<=-15)
+//					{
+//						my_control.Speed_Right_Set=250 ;
+
+//					}
+//					else if(my_control.err>=7  || my_control.err<=-7)
+//					{
+//					    my_control.Speed_Right_Set=260   ;
+//					}
+//					else
+//					{
+//						my_control.Speed_Right_Set=280;
+//					}
+					
 			//	 Cross_Detect(); 
 			//  	 draw_boundary_lines();
 	   	//	 my_control.err=Err_Sum()*1.1;

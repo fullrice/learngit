@@ -559,7 +559,7 @@ void Camera_show()//22
 	 if(gpio_get_level(key_return)== 0)
     {   
 			
-				
+				my_order.count_2s=0;
 			  my_order.go=1;
 			  delay_ms(200);
         lcd_clear();
@@ -573,27 +573,44 @@ void island_show()//22
 {
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
+		lcd_showstr(0,90,"both_lost");
+	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
+		lcd_showstr(0,110,"left_start");
+	lcd_showint(100,110, my_image.Boundry_Start_Left, 5);
+		lcd_showstr(0,130,"right_start");
+	lcd_showint(100,130, my_image.Boundry_Start_Right, 5);
+	 lcd_showstr(0,150,"left_contin");
+	lcd_showint(100,150, my_image.continuity_change_flag_left, 5);
+	 lcd_showstr(0,170,"right_contin");
+	lcd_showint(100,170, my_image.continuity_change_flag_right, 5);
+	lcd_showstr(0,190,"right_lost");
+	lcd_showint(100,190, my_image.Right_Lost_Counter, 5);
+	lcd_showstr(0,210,"left_lost");
+	lcd_showint(100,210, my_image.Left_Lost_Counter, 5);
+		lcd_showstr(0,230,"sear_lost");
+	lcd_showint(100,230, my_image.Search_Stop_Line, 5);
+	lcd_showstr(0,250,"island");
+	lcd_showint(100,250,my_island.island_state, 5);
+	lcd_showstr(0,270,"mon");
+	lcd_showint(100,270,my_island.monotonicity_change_line[0], 5);
 	draw_mid_line();
-  draw_boundary_lines_wide();
+        draw_boundary_lines_wide();
  if(gpio_get_level(key_up)== 0)
     {
-        my_control.D_DIRE-=0.1;
-			//	my_order.add++;
-			//my_control.P_DIRE+=10;
 			  delay_ms(200);
         lcd_clear();
     }
 		 if(gpio_get_level(key_down)== 0)
     {
-     //   my_control.D_DIRE-=0.1;
-			//	my_order.add--;
-			my_control.P_DIRE-=1;
+
 			  delay_ms(200);
         lcd_clear();
     }
 	 if(gpio_get_level(key_enter)== 0)
     {
-			 my_control.Speed_Right_Set +=10;
+   		
+        Longest_White_Column();
+			  Monotonicity_Change_Right(70,10);
         delay_ms(200);
         lcd_clear();
         
@@ -601,9 +618,7 @@ void island_show()//22
 	 if(gpio_get_level(key_return)== 0)
     {   
 			
-				my_order.count_2s=0;//重新计时 
-			 delay_ms(400);
-			  my_order.go=1;
+
 			  delay_ms(200);
         lcd_clear();
     }
@@ -616,6 +631,8 @@ void Cross_show()//22
 {
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
+	lcd_showstr(0,90,"both_lost");
+	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
 	draw_mid_line();
 //	Cross_Detect(); 
 	Find_Up_Point( MT9V03X_H-1, 0 );

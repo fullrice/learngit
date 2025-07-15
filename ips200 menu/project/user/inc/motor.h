@@ -5,8 +5,8 @@
 /*宏定义*/
 #define SPEED_MAX            (3000)                                               // 最大 MAX_DUTY% 占空比
 #define SPEED_MIN            (-3000 )                                               // 最大 MAX_DUTY% 占空比
-#define DIFF_MAX            (4000 )                                               // 最大 MAX_DUTY% 占空比
-#define DIFF_MIN            (-4000  )                                               // 最大 MAX_DUTY% 占空比
+#define DIFF_MAX            (7000 )        //4000                                       // 最大 MAX_DUTY% 占空比
+#define DIFF_MIN            (-7000  )        //4000                                       // 最大 MAX_DUTY% 占空比
 #define DIR_L                (A2 )
 #define PWM_L               (TIM5_PWM_CH4_A3)
 
