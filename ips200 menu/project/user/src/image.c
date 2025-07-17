@@ -4,7 +4,20 @@
 
 // 定义并初始化全局的结构体变量 my_image
 Image my_image = {0};
+//标准赛宽，将车子放在长直道上面实测，以下数值仅供参考
+int Standard_Road_Wide[80] = {
+    // 第一行（前10个数据保持不变）
+    31, 32, 33, 35, 36, 38, 39, 40, 41, 43,
 
+    // 后续行（每行第一个数据保持不变，其余按合理步长递增）
+    44, 45, 46, 47, 48, 49, 50, 51, 52, 53,  // 第一列：44（不变），后续+1
+    56, 57, 58, 59, 60, 61, 62, 63, 64, 65,  // 第一列：56（不变），后续+1
+    69, 70, 71, 72, 73, 74, 75, 76, 77, 78,  // 第一列：69（不变），后续+1
+    82, 83, 84, 85, 86, 87, 88, 89, 90, 91,  // 第一列：82（不变），后续+1
+    94, 95, 96, 97, 98, 99, 100, 101, 102, 103, // 第一列：94（不变），后续+1
+    107, 108, 109, 110, 111, 112, 113, 114, 115, 116, // 第一列：107（不变），后续+1
+    120, 121, 122, 123, 124, 125, 126, 127, 128, 129  // 第一列：120（不变），后续+1
+};
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     图像二值化处理函数
   @param     二值化阈值
@@ -196,6 +209,8 @@ void Longest_White_Column()//最长白列巡线
     int start_column = 20, end_column = MT9V03X_W - 20;
     my_image.Longest_White_Column_Left[0] = 0;//最长白列,[0]是最长白列的长度，[1】是第某列
     my_image.Longest_White_Column_Left[1] = 0;//最长白列,[0]是最长白列的长度，[1】是第某列
+	  my_image.shortest_White_Column_Left[0]=70;
+	  my_image.shortest_White_Column_Left[1]=0;
     my_image.Longest_White_Column_Right[0] = 0;//最长白列,[0]是最长白列的长度，[1】是第某列
     my_image.Longest_White_Column_Right[1] = 0;//最长白列,[0]是最长白列的长度，[1】是第某列
     my_image.Left_Lost_Counter = 0;    //边界丢线数
@@ -221,7 +236,10 @@ void Longest_White_Column()//最长白列巡线
     for (i = 0; i <= MT9V03X_W - 1; i++)
     {
         my_image.White_Column[i] = 0;
+			  my_image.white_line[i]=0;
     }
+
+
     // 统计每列白点数量
     for (j = start_column; j <= end_column; j++)
     {
@@ -229,7 +247,7 @@ void Longest_White_Column()//最长白列巡线
         {
             if (my_image.image_two_value[i][j] == IMG_BLACK)
 						{
-                my_image.white_line[j]=i;//记录每一列终止点的横坐标
+                my_image.white_line[j]=i;//记录每一列终止点的y坐标
                 break;
 						}
             else
@@ -249,8 +267,8 @@ void Longest_White_Column()//最长白列巡线
             my_image.Longest_White_Column_Left[0] = my_image.White_Column[i];
             my_image.Longest_White_Column_Left[1] = i;
         }
-				//找短列
-				if (my_image.shortest_White_Column_Left[0] > my_image.White_Column[i])
+//				//找短列
+				if (my_image.shortest_White_Column_Left[0] > my_image.White_Column[i] && i>=80 && i<=130)
         {
             my_image.shortest_White_Column_Left[0] = my_image.White_Column[i];
             my_image.shortest_White_Column_Left[1] = i;
@@ -272,7 +290,11 @@ void Longest_White_Column()//最长白列巡线
     
     // 设置搜索截止行
     my_image.Search_Stop_Line = my_image.Longest_White_Column_Left[0];
-    
+    if(my_island.island_state==3)
+		{
+		  my_image.Longest_White_Column_Right[1]=140;
+		
+		}
     // 常规巡线
     for (i = MT9V03X_H - 1; i >= MT9V03X_H - my_image.Search_Stop_Line; i--)
     {

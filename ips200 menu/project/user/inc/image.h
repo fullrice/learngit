@@ -31,7 +31,7 @@ typedef struct
 		volatile int Both_Lost_Counter;//两边同时丢线数
     volatile int shortest_White_Column_Left[2];  // 左最长白列：[0]=长度, [1]=列号
     //volatile int shortest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
-	  volatile int white_line[182];
+	  volatile int white_line[MT9V03X_W];
     // 结构类变量
     int Longest_White_Column_Left[2];  // 左最长白列：[0]=长度, [1]=列号
     int Longest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
@@ -60,7 +60,7 @@ typedef struct
 
 // 声明全局的结构体变量
 extern Image my_image;
-
+extern int Standard_Road_Wide[MT9V03X_H];
 // 函数声明
 int My_Adapt_Threshold(uint8* image, uint16 width, uint16 height);
 void Image_Binarization(int threshold);

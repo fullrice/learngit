@@ -22,4 +22,5 @@ void menu_main();
 void Menu_show_1();
 void Camera_show();
 void island_show();
+void show_test();
 #endif

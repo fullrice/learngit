@@ -35,13 +35,14 @@
 
 #include "isr.h"
 #include "motor.h"
+#include "menu.h"
 #include "image.h"
 #include "control.h"
 extern float speed_mps1;
 extern float speed_mps2;   
 extern int count_2s;
 extern int count_10s;
-int Threshold=0;
+//int Threshold=0;
 
 //uint32 d=0;
 //-------------------------------------------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ void TIM2_IRQHandler (void)
 //	  encoder_clear_count(TIM4_ENCODER);
  //  	PID_SPEED(my_control.encoderl/50,my_control.encoderr/50,150);
 	    my_order.black=0;
+	//出界
 				 for(int i=MT9V03X_H-3;i>=3;i--)
 			{
 				 if(my_image.image_two_value[i][MT9V03X_W/2]==0)
@@ -84,7 +86,7 @@ void TIM2_IRQHandler (void)
 						my_order.black++;
 				 }
 			}
-			if(my_order.black>=50)
+			if(my_order.black>=70)
 			{
 			   my_order.go=0;
 			//	my_order.black=0;
@@ -96,6 +98,16 @@ void TIM2_IRQHandler (void)
 			
 			}
 		//Zebra_Detect();		
+	 //蜂鸣器
+		if(my_order.deep_count)
+        {
+            gpio_set_level(BEEP, GPIO_HIGH);
+            my_order.deep_count--;
+        }
+        else
+        {
+            gpio_set_level(BEEP, GPIO_LOW);
+        }
 	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
 		
@@ -170,15 +182,15 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
      my_order.count_2s++;
-	   if(my_order.count_2s>=0 && my_order.count_2s<=60)//1s
-					{
-					   my_control.Speed_Right_Set=420;
-					}
-					else
-					{
-					   my_control.Speed_Right_Set=250;
-					
-					}
+//	   if(my_order.count_2s>=0 && my_order.count_2s<=40)//1s
+//					{
+//					   my_control.Speed_Right_Set=420;
+//					}
+//					else
+//					{
+//					   my_control.Speed_Right_Set=250;
+//					
+//					}
 						
      my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
@@ -283,22 +295,33 @@ void TIM6_IRQHandler (void)
 void TIM7_IRQHandler (void)
 {
     // 此处编写用户代码
-    if(mt9v03x_finish_flag)
-			 {
-				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
-				  Image_Binarization(Threshold);//图像二值化
-			   // Longest_White_Column();
-				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
-				 }
-			 else{}  
-	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	  //     draw_mid_line();
-   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-			//   Longest_White_Column();
+//    if(mt9v03x_finish_flag)
+//			 {
+//				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+//				  Image_Binarization(Threshold);//图像二值化
+//			   // Longest_White_Column();
+//				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+//				 }
+//			 else{}  
+//	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//	  //     draw_mid_line();
+//   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//			   Longest_White_Column();
+//				 Monotonicity_Change_Right(10,70);
+//				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+//				 island_detect(); 
+//				 if(my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=50)
+//				 {
+//				    Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+//	       }
+					 // 	 island_detect(); 
+				 /**/
+	//				draw_mid_line();
+	//				draw_boundary_lines_wide();
 		//		  draw_mid_line();
    //     draw_boundary_lines_wide();
 				// Zebra_Detect();	
-		       my_control.err= err_sum_average(35,40);  //35 40
+		   //    my_control.err= err_sum_average(35,40);  //35 40
 //				 	if(my_control.err>=15  || my_control.err<=-15)
 //					{
 //						my_control.Speed_Right_Set=250 ;
@@ -318,7 +341,44 @@ void TIM7_IRQHandler (void)
 	   	//	 my_control.err=Err_Sum()*1.1;
 				
 				
-				
+				 Zebra_Detect();
+//         Continuity_Change_Right(MT9V03X_H-1-5,10);
+//         Continuity_Change_Left(MT9V03X_H-1-5,10);
+				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);
+         Continuity_Change_Left(30,MT9V03X_H-1-5-5);
+				 Monotonicity_Change_Right(10,70);
+				 Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+//				 	   if(my_island.island_state==1)  //拐点消失
+//        {
+//          my_island.state1_count+=my_control.encoderl;
+//					if(my_island.state1_count>=13000 )//找到的单调点过于向下，开始进入
+//            {   
+//                my_island.island_state =4;
+//							  my_island.state2_count=0;
+//            }
+//        }
+//					 	   if(my_island.island_state==4)  //拐点消失
+//        {
+//          my_island.state2_count+=my_control.encoderl;
+//					if(my_island.state2_count>=9000)//找到的单调点过于向下，开始进入
+//            {   
+//                my_island.island_state =0;
+							  
+//            }
+//        }
+		   		 island_detect(); 
+//				 if(my_island.island_state==3)
+//				 {
+//					  Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点
+////				    my_island.k=(float)((float)(MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]])/(float)(MT9V03X_W-20-my_image.shortest_White_Column_Left[1]));
+////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
+////            Longest_White_Column();//刷新边界数据
+//				 }
+//				 if(my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=50)
+//				 {
+//				    Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+//	       }
 //    // 此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
 }

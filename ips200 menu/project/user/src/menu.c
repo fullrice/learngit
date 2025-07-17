@@ -18,7 +18,7 @@ void flash_read_speed();
 int16 page=1,arrow=0;//控制菜单的俩变量
 int16 page_last;//
 int count=0;
-
+int i=0;
 
 typedef struct
 	{
@@ -509,8 +509,8 @@ void Camera_show()//22
 	lcd_showint(100,110, my_control.speed_lasterrL , 5);
 	lcd_showstr(0,130,"zebra");
 	lcd_showint(100,130, my_order.zebra , 5);
-	lcd_showstr(0,90,"pwm2");
-	lcd_showint(100,90, my_control.pwm_r  , 5);
+	lcd_showstr(0,90,"island");
+	lcd_showint(100,90, my_island.island_state  , 5);
 	lcd_showstr(0,150,"err");
 	lcd_showint(100,150, my_control.err , 5);
 	lcd_showstr(0,170,"p");
@@ -569,16 +569,57 @@ void Camera_show()//22
 
 
 }
+void show_test()
+{
+      ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
+		 if(gpio_get_level(key_enter)== 0)
+    {
+   		  i+=10;
+        delay_ms(200);
+        lcd_clear();
+        
+    }
+		if(gpio_get_level(key_return)== 0)
+    {   
+			
+        my_order.go=1;
+			  delay_ms(200);
+        lcd_clear();
+    }
+      lcd_showstr(0,90,"r1");
+			lcd_showint(100,90, my_image.Right_Line[i], 5);//列号
+      lcd_showstr(0,110,"l1");
+			lcd_showint(100,110, my_image.Left_Line[i], 5);//角点的行数
+       lcd_showstr(0,130,"err");
+			lcd_showint(100,130, my_control.err, 5);//角点的行数
+		 lcd_showstr(0,150,"wide");
+			lcd_showint(100,150, my_image.Right_Line[i]-my_image.Left_Line[i], 5);//角点的行数
+		lcd_showstr(0,170,"i");
+			lcd_showint(100,170, i, 5);//角点的行数
+
+
+}
+	
 void island_show()//22
 {
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
-		lcd_showstr(0,90,"both_lost");
-	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
-		lcd_showstr(0,110,"left_start");
-	lcd_showint(100,110, my_image.Boundry_Start_Left, 5);
-		lcd_showstr(0,130,"right_start");
-	lcd_showint(100,130, my_image.Boundry_Start_Right, 5);
+//		lcd_showstr(0,90,"both_lost");
+//	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
+//	lcd_showstr(0,90,"short_line");
+//	lcd_showint(100,90, my_image.shortest_White_Column_Left[1], 5);//列号
+	lcd_showstr(0,90,"sum");
+	lcd_showint(100,90, my_island.state1_count, 5);//列号
+		//lcd_showstr(0,110,"left_start");
+	//lcd_showint(100,110, my_image.Boundry_Start_Left, 5);
+//	lcd_showstr(0,110,"point");
+//	lcd_showint(100,110, my_island.right_down_line[0], 5);//角点的行数
+	lcd_showstr(0,110,"speed");
+	lcd_showint(100,110, my_control.encoderl, 5);//角点的行数
+//		lcd_showstr(0,130,"right_start");
+//	lcd_showint(100,130, my_image.Boundry_Start_Right, 5);
+			lcd_showstr(0,130,"err");
+	lcd_showint(100,130, my_control.err, 5);
 	 lcd_showstr(0,150,"left_contin");
 	lcd_showint(100,150, my_image.continuity_change_flag_left, 5);
 	 lcd_showstr(0,170,"right_contin");
@@ -589,12 +630,16 @@ void island_show()//22
 	lcd_showint(100,210, my_image.Left_Lost_Counter, 5);
 		lcd_showstr(0,230,"sear_lost");
 	lcd_showint(100,230, my_image.Search_Stop_Line, 5);
+//	lcd_showstr(0,230,"short_col");
+//	lcd_showint(100,230, my_image.white_line[my_image.shortest_White_Column_Left[1]], 5);
 	lcd_showstr(0,250,"island");
 	lcd_showint(100,250,my_island.island_state, 5);
-	lcd_showstr(0,270,"mon");
+	lcd_showstr(0,270,"mon_line");
 	lcd_showint(100,270,my_island.monotonicity_change_line[0], 5);
+	lcd_showstr(0,290,"mon_con");
+	lcd_showint(100,290,my_island.monotonicity_change_line[1], 5);
 	draw_mid_line();
-        draw_boundary_lines_wide();
+  draw_boundary_lines_wide();
  if(gpio_get_level(key_up)== 0)
     {
 			  delay_ms(200);
@@ -609,16 +654,14 @@ void island_show()//22
 	 if(gpio_get_level(key_enter)== 0)
     {
    		
-        Longest_White_Column();
-			  Monotonicity_Change_Right(70,10);
         delay_ms(200);
         lcd_clear();
         
     }
 	 if(gpio_get_level(key_return)== 0)
     {   
-			
-
+			my_island.state1_count=0;
+         my_order.go=1;
 			  delay_ms(200);
         lcd_clear();
     }

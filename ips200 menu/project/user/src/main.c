@@ -48,7 +48,7 @@
 uint32 a=20,b=0;
 uint8 image_copy[MT9V03X_H][MT9V03X_W];
 uint8 image_copy_two_value[MT9V03X_H][MT9V03X_W];//二值化后的原数组
-//int Threshold=0;
+int Threshold=0;
 //int count_2s=0;
 int count_10s=0;
 int32 encoder1;
@@ -99,7 +99,7 @@ void all_init(void)
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
 	    pit_ms_init(TIM6_PIT, 10);//
-			pit_ms_init(TIM7_PIT, 15);//图像
+			pit_ms_init(TIM7_PIT, 5);//图像
 	 		pit_ms_init(TIM2_PIT, 5);//速度方向，可以适当增加·
       interrupt_set_priority(TIM6_IRQn, 1);
 			interrupt_set_priority(TIM7_IRQn, 2);
@@ -125,21 +125,35 @@ int main(void)
     // 此处编写用户代码 例如外设初始化代码等
     while(1)
     {
-        //此处编写需要循环执行的代码
-   //       PID_SPEED(my_control.encoderl,my_control.encoderr,100);
-
-  //    Motor_Left(my_control.pwm_l+my_control.steer_output);
-
- //   	Motor_Right(my_control.pwm_r-my_control.steer_output);
-        //    gpio_set_level(DIR_L, GPIO_HIGH);                                   // DIR输出高电平
-       //     pwm_set_duty(PWM_L, 50 * (PWM_DUTY_MAX / 100));                   // 计算占空比
-        //    Camera_show();
-     //       Motor_Left(2000);
-			      island_show();
-			  //    island_detect();
-			  //  Monotonicity_Change_Right(70,10);
-            Zebra_Detect();
-						system_delay_ms(50);
+       
+			//   island_show();
+		  	Camera_show();
+			//show_test();
+        if(mt9v03x_finish_flag)
+			 {
+				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
+				  Image_Binarization(Threshold);//图像二值化
+			   // Longest_White_Column();
+				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
+				 }
+			 else{}  
+	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+	  //     draw_mid_line();
+   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+			   Longest_White_Column();
+//         	 if(my_island.island_state==3)  
+//				 {
+//					    Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点
+////				    my_island.k=(float)((float)(MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]])/(float)(MT9V03X_W-20-my_image.shortest_White_Column_Left[1]));
+////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
+////            Longest_White_Column();//刷新边界数据
+//				 }				 
+				 my_control.err= err_sum_average(35,40);  //35 40
+				 
+			//	 	 island_detect();
+				 
+			//	 		my_control.err= err_sum_average(35,40);  //35 40
+						system_delay_ms(1);
         // 此处编写需要循环执行的代码
     }
 }

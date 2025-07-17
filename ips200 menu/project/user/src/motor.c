@@ -103,8 +103,8 @@ control my_control = {
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -35    ,//-13 -25 -38  -36  -39  尽量偏左
-    .D_DIRE = -0   , //-0.2  -0.3 
+    .P_DIRE = -31      ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29
+    .D_DIRE = -0.1       , //-0.2  -0.3  -0.2 微调
     .P_SPEED=5.79 , //5.69
     .I_SPEED =0  , //0.1
 	  .pwm_l=0.0f,
@@ -202,12 +202,39 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 
     if(start_point<MT9V03X_H-my_image.Search_Stop_Line)start_point=MT9V03X_H-my_image.Search_Stop_Line-1;//防止起点越界
     if(end_point<MT9V03X_H-my_image.Search_Stop_Line)end_point=MT9V03X_H-my_image.Search_Stop_Line-2;//防止终点越界
-
+     
     float err=0;
-    for(int i=start_point;i<end_point;i++)
-    {
-        err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
-    }
+//		   				for(int i=start_point;i<end_point;i++)
+//				{
+//						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
+//				}
+		//双边
+			if(my_island.island_state==0 || my_island.island_state==4)
+		{
+			//双边
+				for(int i=start_point;i<end_point;i++)
+				{
+						err+=(MT9V03X_W/1.9-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2
+				}
+		}
+		else if(my_island.island_state==1 || my_island.island_state==2)
+		{
+				//单边
+
+						for(int i=start_point;i<end_point;i++)
+						{
+								err+=(MT9V03X_W/1.9-Standard_Road_Wide[i]/1.9-my_image.Left_Line[i]);//左  
+						}
+	   }
+		else if(my_island.island_state==3)
+		{
+		   for(int i=start_point;i<end_point;i++)
+						{
+								err += ( (MT9V03X_W/2 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+						}	
+		}
+			
+			
     err=err/(end_point-start_point);
     return err;
 }
@@ -215,7 +242,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 /**
  * @brief 优化后的误差计算函数，考虑前瞻距离和赛道斜率
  * @return 加权平均误差值（有正负）
- */
+ */  
 float Optimized_Err_Sum(void)
 {
     int i;
