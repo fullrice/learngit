@@ -504,7 +504,13 @@ void test3()//214
 void Camera_show()//22
 {
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
+	if(my_order.show==1)
+	{
+	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+			draw_mid_line();
+     draw_boundary_lines_wide();
+	}
+
 	lcd_showstr(0,110,"speed_err");
 	lcd_showint(100,110, my_control.speed_lasterrL , 5);
 	lcd_showstr(0,130,"zebra");
@@ -527,7 +533,7 @@ void Camera_show()//22
 	lcd_showint(100,270, my_control.steer_output , 5);
 		lcd_showstr(0,290,"black");
 	lcd_showint(100,290, my_order.black , 5);
-	draw_mid_line();
+//	draw_mid_line();
 //	Cross_Detect(); 
 //	Find_Up_Point( MT9V03X_H-1, 0 );
 //	Find_Down_Point( MT9V03X_H-1, 0 );
@@ -561,6 +567,7 @@ void Camera_show()//22
 			
 				my_order.count_2s=0;
 			  my_order.go=1;
+			  my_order.show=0;
 			  delay_ms(200);
         lcd_clear();
     }
@@ -603,7 +610,13 @@ void show_test()
 void island_show()//22
 {
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);  
+	if(my_order.show==1)
+	{
+	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+			draw_mid_line();
+  draw_boundary_lines_wide();
+	}		
+
 //		lcd_showstr(0,90,"both_lost");
 //	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
 //	lcd_showstr(0,90,"short_line");
@@ -638,8 +651,7 @@ void island_show()//22
 	lcd_showint(100,270,my_island.monotonicity_change_line[0], 5);
 	lcd_showstr(0,290,"mon_con");
 	lcd_showint(100,290,my_island.monotonicity_change_line[1], 5);
-	draw_mid_line();
-  draw_boundary_lines_wide();
+
  if(gpio_get_level(key_up)== 0)
     {
 			  delay_ms(200);
@@ -662,6 +674,8 @@ void island_show()//22
     {   
 			my_island.state1_count=0;
          my_order.go=1;
+						  my_order.show=0;
+
 			  delay_ms(200);
         lcd_clear();
     }

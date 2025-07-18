@@ -3,6 +3,7 @@
 #include "control.h"
 #include <math.h>
 
+#define BEEP                (D7 )
 order my_order={
   .go=0 ,
 	.cross=0,
@@ -12,8 +13,9 @@ order my_order={
 	.start=0,
 	.add=0,
 	.zebra=0,
-	.deep_count=0,
-	.count=0
+	.beep_count=0,
+	.count=0,
+	.show=1
 };
 island my_island={
   .right_down_line={80},
@@ -21,6 +23,8 @@ island my_island={
 	.state1_count=0,
 	.state2_count=0,
   .state3_count=0,
+	.state4_count=0,
+	.state5_count=0,
 	.monotonicity_change_line={0},
 	.k=0,
   .point={0}//单调点的情况
@@ -36,7 +40,21 @@ uint8  key4_flag;
 uint32 count_time;
 int test=0;
 
+void beep_on()
+{
+   if(my_order.beep_count>=20)
+	 {
+	     	  gpio_set_level(BEEP, GPIO_LOW);                                             // BEEP 停
+	 }
+	 else
+	 {
+          gpio_set_level(BEEP, GPIO_HIGH);                                            // BEEP 响
+	        my_order.beep_count++;
+	 }
 
+
+
+}
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     十字检测
   @param     null
@@ -142,11 +160,12 @@ void island_detect()
                my_image.Both_Lost_Counter<=10)  
             {
               //  Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
-                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
-                {
+//                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
+//                {
                     my_island.island_state=1;//进入状态一
 									  my_island.state1_count=0;
-                }//进入之后开始
+									  my_order.beep_count=0;
+//                }//进入之后开始
 //                else
 //                {
 //                    my_island.island_state=0;
@@ -156,39 +175,64 @@ void island_detect()
 						//单调点12-60
 	   if(my_island.island_state==1)  //拐点消失
         {
+					 beep_on();
           my_island.state1_count+=my_control.encoderl;
           // Monotonicity_Change_Right(70,10);//找角点
            my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
         //   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-					if(my_island.state1_count>=5000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
+					if(my_island.state1_count>=3000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
             {   
+							 my_order.beep_count=0;
                 my_island.island_state =2;
 							  my_island.state2_count=0;
-            }
+            }//5000
         }
 		if(my_island.island_state==2)
 		{
+			//   beep_on();
 			  my_island.state2_count+=my_control.encoderl;   
 		    // my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-		     if(my_island.state2_count>=11000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
+		     if(my_island.state2_count>=6000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
             {
+							   my_order.beep_count=0;
                 my_island.island_state =3;
 							  my_island.state3_count=0;
-            }	
+            }	//130000  
 		}
-   	if(my_island.island_state==3)
+   	if(my_island.island_state==3)//拉环
 		{
+			//  beep_on();
 			  my_island.state3_count+=my_control.encoderl;   
-					if(my_island.state3_count>=12000)
+					if(my_island.state3_count>=7000)
 					{
+						 my_order.beep_count=0;
 					   my_island.island_state =4;
-					
+					   my_island.state4_count=0;
 					
 					}
 
-    }			
+    }	
+   if(my_island.island_state==4)//内部
+		{		
+      	  my_island.state4_count+=my_control.encoderl;   
+					if(my_island.state4_count>=11000)
+					{
+					   my_island.island_state =5;
+					   my_island.state5_count=0;
+					
+					}
 
-        
+		}
+		 if(my_island.island_state==5)//拉环
+		{		
+      	  my_island.state5_count+=my_control.encoderl;   
+					if(my_island.state5_count>=5000)
+					{
+					   my_island.island_state =0;
+					
+					}
+
+		}
 		
 		 
 }
@@ -267,7 +311,7 @@ void Zebra_Detect(void)
         }
     }
    // lcd_showint16(100,6,change);
-    if(change>=10)
+    if(change>=20)
     {
  
 			my_order.zebra=1;  //遇上斑马线了
@@ -603,5 +647,52 @@ void K_Draw_Line(float k, int startX, int startY,int endY)
     Draw_Line(startX,startY,endX,endY);
 }
 
-
+/**
+ * 斜截式线性插值函数
+ * 在给定的行范围内计算列坐标并存入左边线数组
+ * 
+ * @param begin   起始行号 (y坐标，int类型)
+ * @param end     结束行号 (y坐标，int类型)
+ * @param y_begin 起始列号 (x坐标，int类型)
+ * @param y_end   结束列号 (x坐标，int类型)
+ * @param Left_Line 左边线数组(行号索引存储列号，volatile int类型)
+ */
+void xieji(int begin, int end, int y_begin, int y_end)
+{
+    float xielv;  // 直线斜率
+    float jieju;  // 直线截距
+    
+    // 处理垂直线特殊情况(斜率无穷大)
+    if (end == begin)  
+    {
+        // 在行范围内所有点设置为相同列值
+        for (int i = begin; i < end; i++)
+        {
+            my_image.Left_Line[i] = y_begin;
+            // 边界保护处理
+            if (my_image.Left_Line[i] <= 1)                     // 防止左溢出
+                my_image.Left_Line[i] = 1;
+            else if (my_image.Left_Line[i] >= MT9V03X_W - 2)    // 防止右溢出
+                my_image.Left_Line[i] = MT9V03X_W - 2;
+        }
+        return;
+    }
+    
+    // 计算直线斜率和截距(浮点运算)
+    xielv = (float)(y_end - y_begin) / (float)(end - begin);  // 斜率公式: k=(y2-y1)/(x2-x1)
+    jieju = y_begin - xielv * begin;                         // 截距公式: b=y1-k*x1
+    
+    // 在起止行号之间进行线性插值
+    for (int i = begin; i < end; i++)
+    {
+        // 四舍五入取整后存入左边线数组
+        my_image.Left_Line[i] = (int)(xielv * i + jieju + 0.5f);  // y = k*x + b
+        
+        // 边界保护处理
+        if (my_image.Left_Line[i] <= 1)                     // 最小列号限制为1
+            my_image.Left_Line[i] = 1;
+        else if (my_image.Left_Line[i] >= MT9V03X_W - 2)    // 最大列号限制为图像宽度-2
+            my_image.Left_Line[i] = MT9V03X_W - 2;
+    }
+}
 

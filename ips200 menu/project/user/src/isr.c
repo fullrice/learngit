@@ -99,18 +99,20 @@ void TIM2_IRQHandler (void)
 			}
 		//Zebra_Detect();		
 	 //蜂鸣器
-		if(my_order.deep_count)
-        {
-            gpio_set_level(BEEP, GPIO_HIGH);
-            my_order.deep_count--;
-        }
-        else
-        {
-            gpio_set_level(BEEP, GPIO_LOW);
-        }
 	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
+		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+		{
 		
+		   my_control.Speed_Right_Set=360;
+		   
+		}
+		else
+		{
+		  my_control.Speed_Right_Set=250;
+		
+		}
+		//     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
 		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
   //    PID_DIR(5);	
  //    Motor_Left(my_control.pwm_l+my_control.steer_output

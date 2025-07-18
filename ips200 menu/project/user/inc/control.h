@@ -10,10 +10,11 @@ typedef struct {
 	volatile int time;
 	volatile int count_2s;
 	volatile int count;
-	volatile int deep_count;
+	volatile int beep_count;
 	volatile int black; 
 	volatile int add; 
 	volatile int zebra; 
+	volatile int show; 
 }order;
 typedef struct {
    volatile int right_down_line[2];//右下角点 0是行，1是列
@@ -22,6 +23,8 @@ typedef struct {
 	volatile int state1_count;
 	volatile int state2_count;
 	volatile int state3_count;
+	volatile int state4_count;
+	volatile int state5_count;
 	volatile int k;
 	volatile int point[2];//0是列，1是行
 }island;
@@ -37,4 +40,6 @@ void Find_Right_Down_Point(int start,int end);//找四个角点，返回值是�
 void Continuity_Change_Left(int start,int end);//连续性阈值设置为5
 void K_Draw_Line(float k, int startX, int startY,int endY);
 void Draw_Line(int startX, int startY, int endX, int endY);
+void beep_on();
+void xieji(int begin, int end, int y_begin, int y_end);
 #endif

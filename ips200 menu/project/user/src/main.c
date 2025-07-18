@@ -67,7 +67,7 @@ void all_init(void)
     // 电机方向控制
     gpio_init(DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // GPIO 初始化为输出 默认上拉输出高
     gpio_init(DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // GPIO 初始化为输出 默认上拉输出高
-    
+    gpio_init(BEEP, GPO, GPIO_LOW, GPO_PUSH_PULL);
     // 按键输入
     gpio_init(E2, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_enter
     gpio_init(E3, GPI, GPIO_HIGH, GPI_PULL_UP);       // key_return
@@ -99,8 +99,8 @@ void all_init(void)
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
 	    pit_ms_init(TIM6_PIT, 10);//
-			pit_ms_init(TIM7_PIT, 5);//图像
-	 		pit_ms_init(TIM2_PIT, 5);//速度方向，可以适当增加·
+			pit_ms_init(TIM7_PIT, 4);//图像   //4
+	 		pit_ms_init(TIM2_PIT, 1);//速度方向，可以适当增加·//1
       interrupt_set_priority(TIM6_IRQn, 1);
 			interrupt_set_priority(TIM7_IRQn, 2);
 			interrupt_set_priority(TIM2_IRQn, 3);
@@ -126,8 +126,8 @@ int main(void)
     while(1)
     {
        
-			//   island_show();
-		  	Camera_show();
+			  // island_show();
+		       	Camera_show();
 			//show_test();
         if(mt9v03x_finish_flag)
 			 {
@@ -140,15 +140,21 @@ int main(void)
 	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-			   Longest_White_Column();
+			    Longest_White_Column();
 //         	 if(my_island.island_state==3)  
 //				 {
 //					    Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点
 ////				    my_island.k=(float)((float)(MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]])/(float)(MT9V03X_W-20-my_image.shortest_White_Column_Left[1]));
 ////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
 ////            Longest_White_Column();//刷新边界数据
-//				 }				 
-				 my_control.err= err_sum_average(35,40);  //35 40
+//				 }	
+         if(my_island.island_state == 4)	//状态四
+         {
+				     xieji(my_island.monotonicity_change_line[0], MT9V03X_W/2 ,my_island.monotonicity_change_line[1],5);
+				 
+				 
+				 }					 
+				 my_control.err= err_sum_average(42,47);  //35 40  调整到更低  //42 47
 				 
 			//	 	 island_detect();
 				 
