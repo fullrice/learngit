@@ -30,6 +30,7 @@ menu my_menu={1};
 void motor();
 void control_show();
 void go_show();//231
+void add();
 void go_show_ready();
 void key_action()
 {          
@@ -56,12 +57,12 @@ void key_action()
     }
 	switch(page)
 	{
-		case 1:if((arrow<0)) arrow=60;else if((arrow>60))arrow=0; break;
+		case 1:if((arrow<0)) arrow=100;else if((arrow>100))arrow=0; break;
 		case 21:if((arrow<0)) arrow=40;else if((arrow>40))arrow=0; break;
 	}
 	
-	if((arrow<0)) arrow=60;
-	else if((arrow>60))arrow=0;
+	if((arrow<0)) arrow=120;
+	else if((arrow>120))arrow=0;
 	
 }
 
@@ -78,6 +79,7 @@ void menu_main()
 					  case 22:Camera_show();      break;//第一页
 					 case 23:control_show();     break;//第一页
 					case 24 :dir();break;
+					case 25 :add();break;
 					  case 211:speed_p_show();break;
 					  case 212:speed_i_show();break;
 					case 213:speed_show();break;
@@ -94,6 +96,22 @@ void menu_main()
 	   //主菜单下的return可以添加指定效果
 	 }
  }
+
+ 
+void menu_sub()
+{
+    switch(my_order.page)
+        {
+				   case 1 :Camera_show();  break;//第一页
+				   
+				
+				}
+
+
+
+
+
+}
 void Menu_show_1()//1
 {
 	  //更新
@@ -107,9 +125,12 @@ void Menu_show_1()//1
     key_action();
     lcd_showstr(0,arrow,"->");
 		lcd_showstr(20,0,"speed");
-    lcd_showstr(20,20,"image_show");
+    lcd_showstr(20,20,"camera_show");
 		lcd_showstr(20,40,"control");
 		lcd_showstr(20,60,"DIR");
+		lcd_showstr(20,80,"add");
+		lcd_showstr(80,170,"island_open");
+		lcd_showint(80,190, my_island.open, 5);
     if(gpio_get_level(key_enter)==0)
     {
         delay_ms(300);
@@ -120,6 +141,7 @@ void Menu_show_1()//1
 				case 40:page=22;arrow=0;break;
 				case 60:page=23;arrow=0;break;
 				case 80 :page=24;arrow=0;break;
+				case 100 :page=25;arrow=0;break;
 				case 5:page=25;arrow=0;break;
 				case 6:page=26;arrow=0;break;
 				case 7:page=27;arrow=0;break;
@@ -127,6 +149,22 @@ void Menu_show_1()//1
 			}
 	 
     }
+		if(gpio_get_level(key_return)==0)
+		{
+			if( my_island.open==0)
+			{
+			   my_island.open=1;
+			}
+	    else if( my_island.open==1)
+			{
+			   my_island.open=0;
+			
+			}
+	//		 my_island.open=0;
+         delay_ms(200);
+        lcd_clear();
+		
+		}
 }
 void flash_read_speed()
 {
@@ -170,6 +208,58 @@ void control_show()//23
         page=1;
     }
 }
+void add()//25
+{  
+		if(my_order.show==1)
+	{
+	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+			draw_mid_line();
+     draw_boundary_lines_wide();
+	}
+	lcd_showstr(0,90,"p_dir");
+	lcd_showint(100,90, my_control.P_DIRE, 5);
+	lcd_showstr(0,110,"d_dir");
+	lcd_showint(100,110, my_control.D_DIRE  , 5);
+		lcd_showstr(0,130,"add");
+	lcd_showint(100,130, my_order.add , 5);
+
+     if(gpio_get_level(key_up)== 0)
+    {
+   //   my_control.D_DIRE-=0.1;
+	//		my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
+				my_order.add++;
+			//my_control.P_DIRE+=10;
+			  delay_ms(200);
+        lcd_clear();
+    }
+		 if(gpio_get_level(key_down)== 0)
+    {
+     //   my_control.D_DIRE-=0.1;
+				my_order.add--;
+		//	my_control.P_DIRE-=1;
+			  delay_ms(200);
+        lcd_clear();
+    }
+	 if(gpio_get_level(key_enter)== 0)
+    {
+        my_order.encorder_time=0;
+				my_order.count_2s=0;
+			  my_order.go=1;
+			  my_order.show=0;
+			  my_menu.menu_open=0;
+        delay_ms(200);
+        lcd_clear();
+        
+    }
+	 if(gpio_get_level(key_return)== 0)
+    {   
+
+        lcd_clear();
+        page=1;
+    }
+
+
+}
 void go_show()//231
 {
 	  
@@ -183,15 +273,15 @@ void go_show()//231
     }
 	  if(gpio_get_level(key_up)== 0)
     {
-			my_control.Speed_Left_Set=my_control.Speed_Left_Set+100;
-			my_control.Speed_Right_Set=my_control.Speed_Right_Set+100;
+			my_control.Speed_Left_Set=my_control.Speed_Left_Set+20;
+			my_control.Speed_Right_Set=my_control.Speed_Right_Set+20;
         delay_ms(300);
         lcd_clear();
 		}
 		if(gpio_get_level(key_down)== 0)
     {
-			 my_control.Speed_Left_Set=my_control.Speed_Left_Set-100;
-			my_control.Speed_Right_Set=my_control.Speed_Right_Set-100;
+			 my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
+			my_control.Speed_Right_Set=my_control.Speed_Right_Set-20;
         delay_ms(300);
         lcd_clear();
 		}
@@ -205,22 +295,13 @@ void go_show()//231
 }
 void go_show_ready()
 {
-    lcd_showstr(0,0,"Are you sure to go?");
+		  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+    lcd_showstr(0,100,"Are you sure to go?");
 	 if(gpio_get_level(key_enter)== 0)
     {
-			int i=0;
-			while(i<10)
-      {
-			   delay_ms(300);
-				i++;
-			}
-			my_order.count_2s=0;//重新计时 
-			my_order.go=1;
-			 while(count<1000)
-			 {
-				 count++;
-			 }
-			 count=0;
+			 my_order.count_2s=0;//重新计时 
+			 my_order.go=1;
+			 my_menu.menu_open=0;
 			  page=213;
         delay_ms(100);
         lcd_clear();
@@ -249,7 +330,8 @@ void motor()//21
    lcd_showfloat(140,0, my_control.P_SPEED, 5, 2);
 	 lcd_showstr(20,20,"speed_i_show:");
 	 lcd_showfloat(140,20, my_control.I_SPEED, 5, 2);
-	 lcd_showstr(20,40,"speed_show");
+	 lcd_showstr(20,40,"speed_set");
+	lcd_showfloat(140,40, my_control.Speed_Left_Set, 5, 2);
 	// lcd_showfloat(20,60, my_control.encoder2, 5, 2);
 //	 lcd_showfloat(20,40, kd, 5, 2);
 	 //lcd_showfloat(20,80, I_count1, 5, 2);
@@ -355,13 +437,13 @@ void dir_d_show()//241
 	  lcd_showfloat(0,20, my_control.D_DIRE, 5, 2);
 	if(gpio_get_level(key_up)== 0)
     {
-			 my_control.D_DIRE=my_control.D_DIRE+10;
+			 my_control.D_DIRE=my_control.D_DIRE+0.1;
         delay_ms(300);
         lcd_clear();
 		}
 		if(gpio_get_level(key_down)== 0)
     {
-			 my_control.D_DIRE=my_control.D_DIRE-10 ;
+			 my_control.D_DIRE=my_control.D_DIRE-0.1 ;
         delay_ms(300);
         lcd_clear();
 		}
@@ -431,23 +513,21 @@ void speed_show()//213
 //   lcd_showstr(0,arrow,"->");
 	 delay_ms(200);
 	  lcd_showstr(0,0,"set_l");
-	 lcd_showstr(0,20,"set_r");
-	 lcd_showstr(0,40,"speed_l");
-	 lcd_showstr(0,60,"speed_r");
-	 lcd_showstr(0,80,"steer_out");
-	lcd_showstr(0,100,"err");
-	lcd_showstr(0,120,"pwml");
-	lcd_showstr(0,140,"pwmr");
-	lcd_showstr(0,160,"lost");
+
 	 lcd_showint(100,0, my_control.Speed_Left_Set, 5);
-	 lcd_showint(100,20, my_control.Speed_Right_Set, 5);
-	 lcd_showint(100,40, my_control.encoderl, 5);
-	 lcd_showint(100,60, my_control.encoderr, 5);
-	lcd_showint(100,80, my_control.steer_output , 5);
-	lcd_showint(100,100, my_control.err , 5);
-	lcd_showint(100,120, my_control.pwm_l , 5);
-	lcd_showint(100,140, my_control.pwm_r , 5);
-		lcd_showint(100,160, my_image.Longest_White_Column_Right[0] , 5);
+
+   if(gpio_get_level(key_up)== 0)
+    {
+			my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
+        delay_ms(300);
+        lcd_clear();
+		}
+		if(gpio_get_level(key_down)== 0)
+    {
+			 my_control.Speed_Left_Set=my_control.Speed_Left_Set+20;
+        delay_ms(300);
+        lcd_clear();
+		}
 
 //	if(my_order.go==0)
 //	{
@@ -511,8 +591,10 @@ void Camera_show()//22
      draw_boundary_lines_wide();
 	}
 
-	lcd_showstr(0,110,"speed_err");
-	lcd_showint(100,110, my_control.speed_lasterrL , 5);
+//	lcd_showstr(0,110,"speed_err");
+//	lcd_showint(100,110, my_control.speed_lasterrL , 5);
+	lcd_showstr(0,110,"speed_pwm");
+	lcd_showint(100,110, my_control.pwm_l , 5);
 	lcd_showstr(0,130,"zebra");
 	lcd_showint(100,130, my_order.zebra , 5);
 	lcd_showstr(0,90,"island");
@@ -524,7 +606,7 @@ void Camera_show()//22
 		lcd_showstr(0,190,"d");
 	lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
 		lcd_showstr(0,210,"set_speed");
-	lcd_showint(100,210, my_control.Speed_Right_Set , 5);
+	lcd_showint(100,210, my_control.Speed_Left_Set , 5);
 		lcd_showstr(0,230,"speed_L");
 	lcd_showint(100,230, my_control.encoderl , 5);
 		lcd_showstr(0,250,"speed_R");
@@ -541,7 +623,8 @@ void Camera_show()//22
 //	Draw_Track_Boundary();
  if(gpio_get_level(key_up)== 0)
     {
-        my_control.D_DIRE-=0.1;
+      my_control.D_DIRE-=0.1;
+	//		my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
 			//	my_order.add++;
 			//my_control.P_DIRE+=10;
 			  delay_ms(200);
@@ -564,10 +647,11 @@ void Camera_show()//22
     }
 	 if(gpio_get_level(key_return)== 0)
     {   
-			
+			  my_order.encorder_time=0;
 				my_order.count_2s=0;
 			  my_order.go=1;
 			  my_order.show=0;
+			  my_menu.menu_open=0;
 			  delay_ms(200);
         lcd_clear();
     }
@@ -614,7 +698,7 @@ void island_show()//22
 	{
 	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
 			draw_mid_line();
-  draw_boundary_lines_wide();
+      draw_boundary_lines_wide();
 	}		
 
 //		lcd_showstr(0,90,"both_lost");
@@ -625,10 +709,10 @@ void island_show()//22
 	lcd_showint(100,90, my_island.state1_count, 5);//列号
 		//lcd_showstr(0,110,"left_start");
 	//lcd_showint(100,110, my_image.Boundry_Start_Left, 5);
-//	lcd_showstr(0,110,"point");
-//	lcd_showint(100,110, my_island.right_down_line[0], 5);//角点的行数
-	lcd_showstr(0,110,"speed");
-	lcd_showint(100,110, my_control.encoderl, 5);//角点的行数
+	lcd_showstr(0,110,"point");
+	lcd_showint(100,110, my_island.right_down_line[0], 5);//角点的行数
+//	lcd_showstr(0,110,"speed");
+//	lcd_showint(100,110, my_control.encoderl, 5);//角点的行数
 //		lcd_showstr(0,130,"right_start");
 //	lcd_showint(100,130, my_image.Boundry_Start_Right, 5);
 			lcd_showstr(0,130,"err");

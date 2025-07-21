@@ -11,20 +11,24 @@ order my_order={
   .count_2s=0,
 	.black=0,
 	.start=0,
-	.add=0,
+	.add=-39,
 	.zebra=0,
 	.beep_count=0,
 	.count=0,
-	.show=1
+	.show=1,
+	.page=1,  
+	.encorder_time=0
 };
 island my_island={
   .right_down_line={80},
+	.left_down_line={80},
 	.island_state=0,
 	.state1_count=0,
 	.state2_count=0,
   .state3_count=0,
 	.state4_count=0,
 	.state5_count=0,
+	.open=0,
 	.monotonicity_change_line={0},
 	.k=0,
   .point={0}//单调点的情况
@@ -180,7 +184,7 @@ void island_detect()
           // Monotonicity_Change_Right(70,10);//找角点
            my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
         //   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-					if(my_island.state1_count>=3000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
+					if(my_island.state1_count>=10000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
             {   
 							 my_order.beep_count=0;
                 my_island.island_state =2;
@@ -189,10 +193,10 @@ void island_detect()
         }
 		if(my_island.island_state==2)
 		{
-			//   beep_on();
+			   beep_on();
 			  my_island.state2_count+=my_control.encoderl;   
 		    // my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-		     if(my_island.state2_count>=6000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
+		     if(my_island.state2_count>=15000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
             {
 							   my_order.beep_count=0;
                 my_island.island_state =3;
@@ -201,9 +205,9 @@ void island_detect()
 		}
    	if(my_island.island_state==3)//拉环
 		{
-			//  beep_on();
+			  beep_on();
 			  my_island.state3_count+=my_control.encoderl;   
-					if(my_island.state3_count>=7000)
+					if(my_island.state3_count>=18000)
 					{
 						 my_order.beep_count=0;
 					   my_island.island_state =4;
@@ -214,8 +218,9 @@ void island_detect()
     }	
    if(my_island.island_state==4)//内部
 		{		
+			  beep_on();
       	  my_island.state4_count+=my_control.encoderl;   
-					if(my_island.state4_count>=11000)
+					if(my_island.state4_count>5000)
 					{
 					   my_island.island_state =5;
 					   my_island.state5_count=0;
@@ -225,10 +230,11 @@ void island_detect()
 		}
 		 if(my_island.island_state==5)//拉环
 		{		
+			   beep_on();
       	  my_island.state5_count+=my_control.encoderl;   
-					if(my_island.state5_count>=5000)
+					if(my_island.state5_count>=20000)
 					{
-					   my_island.island_state =0;
+					   my_island.island_state =6;
 					
 					}
 
@@ -237,7 +243,51 @@ void island_detect()
 		 
 }
 
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左下角点检测
+  @param     起始点，终止点
+  @return    返回角点所在的行数，找不到返回0
+  Sample     Find_Left_Down_Point(int start,int end);
+  @note      角点检测阈值可根据实际值更改
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Left_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
+{
+    int i,t;
+    int left_down_line=0;
+    if(my_image.Right_Lost_Counter>=0.9*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
+        my_island.left_down_line[0]=left_down_line;
+		    my_island.left_down_line[1]=my_image.Left_Line[my_island.left_down_line[0]];
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start=MT9V03X_H-1-5;
+    if(end<=MT9V03X_H-my_image.Search_Stop_Line)
+        end=MT9V03X_H-my_image.Search_Stop_Line;
+    if(end<=5)
+       end=5;
+    for(i=start;i>=end;i--)
+    {
+        if(left_down_line==0&&//只找第一个符合条件的点
+           abs(my_image.Left_Line[i]-my_image.Left_Line[i+1])<=5&&//角点的阈值可以更改
+           abs(my_image.Left_Line[i+1]-my_image.Left_Line[i+2])<=5&&  
+           abs(my_image.Left_Line[i+2]-my_image.Left_Line[i+3])<=5&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-2])>=5&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-3])>=10&&
+              (my_image.Left_Line[i]-my_image.Left_Line[i-4])>=10)
+        {
+            left_down_line=i;//获取行数即可
+            break;
+        }
+    }
+		    my_island.left_down_line[0]=left_down_line;
+		my_island.left_down_line[1]=my_image.Left_Line[my_island.left_down_line[0]];
 
+    
+}
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     右下角点检测
   @param     起始点，终止点
@@ -311,7 +361,7 @@ void Zebra_Detect(void)
         }
     }
    // lcd_showint16(100,6,change);
-    if(change>=20)
+    if(change>=25)
     {
  
 			my_order.zebra=1;  //遇上斑马线了
@@ -695,4 +745,42 @@ void xieji(int begin, int end, int y_begin, int y_end)
             my_image.Left_Line[i] = MT9V03X_W - 2;
     }
 }
-
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     通过斜率，定点补线--
+  @param     k       输入斜率
+             startY  输入起始点纵坐标
+             endY    结束点纵坐标
+  @return    null
+  Sample     K_Add_Boundry_Left(float k,int startY,int endY);
+  @note      补得线直接贴在边线上
+-------------------------------------------------------------------------------------------------------------------*/
+void K_Add_Boundry_Left(float k,int startX,int startY,int endY)
+{
+    int i,t;
+    if(startY>=MT9V03X_H-1)
+        startY=MT9V03X_H-1;
+    else if(startY<=0)
+        startY=0;
+    if(endY>=MT9V03X_H-1)
+        endY=MT9V03X_H-1;
+    else if(endY<=0)
+        endY=0;
+    if(startY<endY)//--操作，start需要大
+    {
+        t=startY;
+        startY=endY;
+        endY=t;
+    }
+    for(i=startY;i>=endY;i--)
+    {
+        my_image.Left_Line[i]=(int)((i-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+        if(my_image.Left_Line[i]>=MT9V03X_W-1)
+        {
+            my_image.Left_Line[i]=MT9V03X_W-1;
+        }
+        else if(my_image.Left_Line[i]<=0)
+        {
+            my_image.Left_Line[i]=0;
+        }
+    }
+}

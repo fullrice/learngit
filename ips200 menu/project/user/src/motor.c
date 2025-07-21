@@ -103,9 +103,9 @@ control my_control = {
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -45     ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）
-    .D_DIRE = -0       , //-0.2  -0.3  -0.2 微调
-    .P_SPEED=5.79  , //5.69
+    .P_DIRE = -29       ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
+    .D_DIRE = 0       , //-0.2  -0.3  -0.2 微调
+    .P_SPEED=5.79  , //5.69     
     .I_SPEED =0, //0.1
 	  .pwm_l=0.0f   ,
 	  .Shift_Ratio=0.0f,
@@ -113,7 +113,8 @@ control my_control = {
 	  .encoderl=0,//1300
 	  .encoderr=0,//1400
     .steer_output=0,
-	  .speed_err=0
+	  .speed_err=0,
+	  .front=42
 };
 //0否定
 
@@ -199,7 +200,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
         uint8 t=end_point;
         end_point=start_point;
         start_point=t;
-    }
+    }  
 
     if(start_point<MT9V03X_H-my_image.Search_Stop_Line)start_point=MT9V03X_H-my_image.Search_Stop_Line-1;//防止起点越界
     if(end_point<MT9V03X_H-my_image.Search_Stop_Line)end_point=MT9V03X_H-my_image.Search_Stop_Line-2;//防止终点越界
@@ -210,7 +211,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 //						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
 //				}
 		//双边
-			if(my_island.island_state==0 || my_island.island_state==4)
+			if(my_island.island_state==0 || my_island.island_state==4 || my_island.island_state==6)
 		{
 			//双边
 				for(int i=start_point;i<end_point;i++)
@@ -333,11 +334,11 @@ float Fuzzy_P(int E,int EC)
 //只要改下面这几行参数
     //这玩意没什么规律，p越大，转弯越好，直道会有抖动，p小转不过来，凭感觉调
     //建议先用单套pd，看看车子正常的p大概在什么范围，下面的p就会有方向
-	float EFF[7]={-100,-80,-60,0,60,80,100};//摄像头误差分区
+	float EFF[7]={-14,-7,-5,0,5,7,14};//摄像头误差分区
     /*输入量D语言值特征点*/
-    float DFF[7]={-80,-60,-20,0,20,60,80};//误差变化率分区
+    float DFF[7]={-28,-21,-12,0,12,21,28};//误差变化率分区
     /*输出量U语言值特征点(根据赛道类型选择不同的输出值)*/
-    float UFF[7]={0,0.36,0.75,0.996,1.36953,1.7098,2.185};//限幅分区
+    float UFF[7]={-40,-38,-36,-34,-32,-30,0};//限幅分区
 //只要改上面这几行参数
  
  

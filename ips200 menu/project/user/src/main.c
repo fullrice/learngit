@@ -127,7 +127,9 @@ int main(void)
     {
        
 			  // island_show();
-		       	Camera_show();
+		       Camera_show();
+			//  menu_sub();
+       //menu_main();
 			//show_test();
         if(mt9v03x_finish_flag)
 			 {
@@ -140,22 +142,25 @@ int main(void)
 	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 	  //     draw_mid_line();
    // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-			    Longest_White_Column();
+			     Longest_White_Column();
 //         	 if(my_island.island_state==3)  
 //				 {
 //					    Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点
 ////				    my_island.k=(float)((float)(MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]])/(float)(MT9V03X_W-20-my_image.shortest_White_Column_Left[1]));
-////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
+////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03 X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
 ////            Longest_White_Column();//刷新边界数据
 //				 }	
-         if(my_island.island_state == 4)	//状态四
+         if(my_island.island_state == 5 )	//状态四
          {
-				     xieji(my_island.monotonicity_change_line[0], MT9V03X_W/2 ,my_island.monotonicity_change_line[1],5);
-				 
-				 
-				 }					 
-				 my_control.err= err_sum_average(42,47);  //35 40  调整到更低  //42 47
-				 
+				 //    xieji(my_island.monotonicity_change_line[0], 70 ,my_island.monotonicity_change_line[1],20);
+				 	   xieji(my_island.left_down_line[1],70 ,my_island.left_down_line[0],20);	 
+				 }			
+     //    my_control.last_err= my_control.err;				 
+				 my_control.err= err_sum_average(47,52);  //35 40  调整到更低  //42 47   45 50
+				  if(my_island.island_state == 5 || my_island.island_state == 4)	//状态四
+         {
+				     my_control.err=-30;
+				 }			
 			//	 	 island_detect();
 				 
 			//	 		my_control.err= err_sum_average(35,40);  //35 40

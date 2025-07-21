@@ -77,6 +77,7 @@ void TIM2_IRQHandler (void)
 //	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
 //	  encoder_clear_count(TIM4_ENCODER);
  //  	PID_SPEED(my_control.encoderl/50,my_control.encoderr/50,150);
+	//my_order.count_2s++;
 	    my_order.black=0;
 	//出界
 				 for(int i=MT9V03X_H-3;i>=3;i--)
@@ -104,14 +105,47 @@ void TIM2_IRQHandler (void)
 		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
 		{
 		
-		   my_control.Speed_Right_Set=360;
-		   
+		//   my_control.Speed_Right_Set=320;
+					if(my_order.encorder_time<=1000 && my_order.encorder_time>=0)
+				{
+					 my_control.Speed_Right_Set=430;		
+				}
+				else
+				{
+					my_control.Speed_Right_Set=my_control.Speed_Left_Set;
+					my_control.P_DIRE=-36;
+					//my_control.P_DIRE=my_order.add+3;//直道
+				}
+		 //  my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
+		//	my_control.front=42 ;
+		}
+//		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+//		{
+//		
+//		   my_control.Speed_Right_Set=300;
+//		 
+//		}
+		else if(my_control.err<=5 || my_control.err>=-5 && my_island.island_state == 0)
+		{
+		  my_control.Speed_Right_Set=270;
+			my_control.P_DIRE=-38;
+      //my_control.P_DIRE=my_order.add+1;
+		
 		}
 		else
 		{
-		  my_control.Speed_Right_Set=250;
-		
+			
+		  my_control.Speed_Right_Set=270  ;//250
+			my_control.P_DIRE=-40;
+	//		my_control.P_DIRE=my_order.add-1;
+	//		 my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
+		//  my_control.D_DIRE=-0.1;
 		}
+//		if(my_order.encorder_time<=4000 && my_order.encorder_time>=0)
+//		{
+//		   my_control.Speed_Right_Set=440;		
+//		}
+
 		//     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
 		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
   //    PID_DIR(5);	
@@ -183,17 +217,17 @@ void TIM5_IRQHandler (void)
 void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
-     my_order.count_2s++;
-//	   if(my_order.count_2s>=0 && my_order.count_2s<=40)//1s
+//     my_order.count_2s++;
+//	   if(my_order.count_2s>=0 && my_order.count_2s<=50)//1s
 //					{
-//					   my_control.Speed_Right_Set=420;
+//					   my_control.Speed_Right_Set=450;
 //					}
 //					else
 //					{
-//					   my_control.Speed_Right_Set=250;
+//					   my_control.Speed_Right_Set=340;
 //					
 //					}
-						
+		 my_order.encorder_time+=my_control.encoderl;
      my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
 	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
@@ -346,11 +380,16 @@ void TIM7_IRQHandler (void)
 				 Zebra_Detect();
 //         Continuity_Change_Right(MT9V03X_H-1-5,10);
 //         Continuity_Change_Left(MT9V03X_H-1-5,10);
+        if(my_island.open==1)
+				{
 				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);
          Continuity_Change_Left(30,MT9V03X_H-1-5-5);
 				 Monotonicity_Change_Right(10,70);
 				 Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+				 Find_Left_Down_Point(MT9V03X_H-1,20);//找四个角点，返回值是角点所在的行数
 				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+				 island_detect(); 
+				}
 //				 	   if(my_island.island_state==1)  //拐点消失
 //        {
 //          my_island.state1_count+=my_control.encoderl;
@@ -369,7 +408,7 @@ void TIM7_IRQHandler (void)
 							  
 //            }
 //        }
-		   		 island_detect(); 
+//		   		 island_detect(); 
 //				 if(my_island.island_state==3)
 //				 {
 //					  Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点

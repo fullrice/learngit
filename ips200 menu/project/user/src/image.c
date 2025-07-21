@@ -286,7 +286,7 @@ void Longest_White_Column()//最长白列巡线
             my_image.Longest_White_Column_Right[1] = i;
 					
         }
-    }
+    }    
     
     // 设置搜索截止行
     my_image.Search_Stop_Line = my_image.Longest_White_Column_Left[0];
