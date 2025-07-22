@@ -623,10 +623,10 @@ void Camera_show()//22
 //	Draw_Track_Boundary();
  if(gpio_get_level(key_up)== 0)
     {
-      my_control.D_DIRE-=0.1;
+   //   my_control.D_DIRE-=0.1;
 	//		my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
 			//	my_order.add++;
-			//my_control.P_DIRE+=10;
+			my_control.P_DIRE+=1;
 			  delay_ms(200);
         lcd_clear();
     }

@@ -96,17 +96,17 @@ const uint8 Weight[MT9V03X_H]=
 //};
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 250,  //250
-    .Speed_Right_Set = 250,
+    .Speed_Left_Set = 320,  //250
+    .Speed_Right_Set = 320,
     .Straight_Speed = 0,
     .err = 0.0f,//左正右负，并且保证向左转的时候左轮小于右轮，那么
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -29       ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
+    .P_DIRE = -20       ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
     .D_DIRE = 0       , //-0.2  -0.3  -0.2 微调
-    .P_SPEED=5.79  , //5.69     
-    .I_SPEED =0, //0.1
+    .P_SPEED=5.89  , //5.69     
+    .I_SPEED =0.001, //0.1
 	  .pwm_l=0.0f   ,
 	  .Shift_Ratio=0.0f,
 	  .pwm_r=0.0f,
@@ -207,7 +207,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
      
     float err=0;
 //		   				for(int i=start_point;i<end_point;i++)
-//				{
+//				{ 
 //						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
 //				}
 		//双边
@@ -216,7 +216,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 			//双边
 				for(int i=start_point;i<end_point;i++)
 				{
-						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2
+						err+=(MT9V03X_W/1.9-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2
 				}
 		}
 		else if(my_island.island_state==1 || my_island.island_state==2 )

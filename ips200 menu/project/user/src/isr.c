@@ -102,45 +102,45 @@ void TIM2_IRQHandler (void)
 	 //蜂鸣器
 	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
-		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-		{
-		
-		//   my_control.Speed_Right_Set=320;
-					if(my_order.encorder_time<=1000 && my_order.encorder_time>=0)
-				{
-					 my_control.Speed_Right_Set=430;		
-				}
-				else
-				{
-					my_control.Speed_Right_Set=my_control.Speed_Left_Set;
-					my_control.P_DIRE=-36;
-					//my_control.P_DIRE=my_order.add+3;//直道
-				}
-		 //  my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
-		//	my_control.front=42 ;
-		}
-//		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+//		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
 //		{
 //		
-//		   my_control.Speed_Right_Set=300;
-//		 
+//		//   my_control.Speed_Right_Set=320;
+//					if(my_order.encorder_time<=1000 && my_order.encorder_time>=0)
+//				{
+//					 my_control.Speed_Right_Set=430;		
+//				}
+//				else
+//				{
+//					my_control.Speed_Right_Set=my_control.Speed_Left_Set;
+//					my_control.P_DIRE=-36;
+//					//my_control.P_DIRE=my_order.add+3;//直道
+//				}
+//		 //  my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
+//		//	my_control.front=42 ;
 //		}
-		else if(my_control.err<=5 || my_control.err>=-5 && my_island.island_state == 0)
-		{
-		  my_control.Speed_Right_Set=270;
-			my_control.P_DIRE=-38;
-      //my_control.P_DIRE=my_order.add+1;
-		
-		}
-		else
-		{
-			
-		  my_control.Speed_Right_Set=270  ;//250
-			my_control.P_DIRE=-40;
-	//		my_control.P_DIRE=my_order.add-1;
-	//		 my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
-		//  my_control.D_DIRE=-0.1;
-		}
+////		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+////		{
+////		
+////		   my_control.Speed_Right_Set=300;
+////		 
+////		}
+//		else if(my_control.err<=5 || my_control.err>=-5 && my_island.island_state == 0)
+//		{
+//		  my_control.Speed_Right_Set=270;
+//			my_control.P_DIRE=-38;
+//      //my_control.P_DIRE=my_order.add+1;
+//		
+//		}
+//		else
+//		{
+//			
+//		  my_control.Speed_Right_Set=270  ;//250
+//			my_control.P_DIRE=-40;
+//	//		my_control.P_DIRE=my_order.add-1;
+//	//		 my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
+//		//  my_control.D_DIRE=-0.1;
+//		}
 //		if(my_order.encorder_time<=4000 && my_order.encorder_time>=0)
 //		{
 //		   my_control.Speed_Right_Set=440;		
@@ -150,6 +150,7 @@ void TIM2_IRQHandler (void)
 		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
   //    PID_DIR(5);	
  //    Motor_Left(my_control.pwm_l+my_control.steer_output
+    PID_DIR(2);	
 	   Motor_Left(my_control.pwm_l-my_control.steer_output);
 //	//+my_control.steer_output
 //    	Motor_Right(my_control.pwm_r-my_control.steer_output);
@@ -157,7 +158,7 @@ void TIM2_IRQHandler (void)
 	//-my_control.steer_output
   //	  Motor_Left(1000);
   //  Motor_Right(1000); 
- 	   PID_DIR(2);	
+ 	 //  PID_DIR(2);	
  
 	}
 	else

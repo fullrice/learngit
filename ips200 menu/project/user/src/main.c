@@ -98,9 +98,9 @@ void all_init(void)
     //  timer_init(TIM_1, TIMER_US);
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
-	    pit_ms_init(TIM6_PIT, 10);//
-			pit_ms_init(TIM7_PIT, 4);//图像   //4
-	 		pit_ms_init(TIM2_PIT, 1);//速度方向，可以适当增加·//1
+	    pit_ms_init(TIM6_PIT, 10);//编码器标志
+			pit_ms_init(TIM7_PIT, 4);//标志位判断   //4
+	 		pit_ms_init(TIM2_PIT, 1 );//速度方向，可以适当增加·//1
       interrupt_set_priority(TIM6_IRQn, 1);
 			interrupt_set_priority(TIM7_IRQn, 2);
 			interrupt_set_priority(TIM2_IRQn, 3);
@@ -156,7 +156,7 @@ int main(void)
 				 	   xieji(my_island.left_down_line[1],70 ,my_island.left_down_line[0],20);	 
 				 }			
      //    my_control.last_err= my_control.err;				 
-				 my_control.err= err_sum_average(47,52);  //35 40  调整到更低  //42 47   45 50
+				 my_control.err= err_sum_average(30,36);  //35 40  调整到更低  //42 47   45 50
 				  if(my_island.island_state == 5 || my_island.island_state == 4)	//状态四
          {
 				     my_control.err=-30;
