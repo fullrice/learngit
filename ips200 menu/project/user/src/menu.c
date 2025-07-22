@@ -661,7 +661,8 @@ void Camera_show()//22
     if(gpio_get_level(key_enter)== 0)  // 确认键按下
     {
         // 当前功能：增加右侧设定速度
-        my_control.Speed_Right_Set +=10;
+      //  my_control.Speed_Right_Set +=10;
+			   my_control.D_DIRE-=0.1;
         delay_ms(200);
         lcd_clear();
     }

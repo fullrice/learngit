@@ -139,7 +139,7 @@ int main(void)
     {
         /* 图像处理与显示模块（调试时可启用） */
         // island_show();                    // 调试用：显示环岛检测信息（当前被注释）
-        // Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
+        Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
         // menu_sub();                       // 调试用：显示子菜单（当前被注释）
         // menu_main();                     // 调试用：显示主菜单（当前被注释）
         // show_test();                      // 调试用：测试显示（当前被注释）
@@ -169,7 +169,7 @@ int main(void)
 
         /* 控制误差计算 */
         // 计算30-36行图像的平均误差（用于方向控制）
-        my_control.err = err_sum_average(30, 36);  
+        my_control.err = err_sum_average(35,40);  
 
         /* 环岛强制纠偏（状态4/5时覆盖误差） */
         if(my_island.island_state == 5 || my_island.island_state == 4)  

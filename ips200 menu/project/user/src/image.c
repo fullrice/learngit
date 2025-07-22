@@ -758,7 +758,7 @@ void Find_Up_Point(int start,int end)//从下到上扫线
         my_image.Right_Up_Find=0;
         my_image.Left_Up_Find=0;
     }
-} 
+}   
 /* 前进方向定义：
  *   0
  * 3   1
