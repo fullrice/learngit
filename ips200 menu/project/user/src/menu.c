@@ -581,84 +581,102 @@ void test3()//214
 
 }
 
+/* 摄像头数据显示与调试函数 */
 void Camera_show()//22
 {
+ // 原始图像显示（当前被注释）
  // ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	if(my_order.show==1)
-	{
-	  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
-			draw_mid_line();
-     draw_boundary_lines_wide();
-	}
+    
+    // 当显示模式开启时（my_order.show=1）
+    if(my_order.show==1)
+    {
+        // 显示二值化图像
+        ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+        // 绘制赛道中线
+        draw_mid_line();
+        // 绘制赛道边界线（宽线版本）
+        draw_boundary_lines_wide();
+    }
 
-//	lcd_showstr(0,110,"speed_err");
-//	lcd_showint(100,110, my_control.speed_lasterrL , 5);
-	lcd_showstr(0,110,"speed_pwm");
-	lcd_showint(100,110, my_control.pwm_l , 5);
-	lcd_showstr(0,130,"zebra");
-	lcd_showint(100,130, my_order.zebra , 5);
-	lcd_showstr(0,90,"island");
-	lcd_showint(100,90, my_island.island_state  , 5);
-	lcd_showstr(0,150,"err");
-	lcd_showint(100,150, my_control.err , 5);
-	lcd_showstr(0,170,"p");
-	lcd_showfloat(100,170, my_control.P_DIRE , 5,3);
-		lcd_showstr(0,190,"d");
-	lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
-		lcd_showstr(0,210,"set_speed");
-	lcd_showint(100,210, my_control.Speed_Left_Set , 5);
-		lcd_showstr(0,230,"speed_L");
-	lcd_showint(100,230, my_control.encoderl , 5);
-		lcd_showstr(0,250,"speed_R");
-	lcd_showint(100,250, my_control.encoderr , 5);
-	lcd_showstr(0,270,"steer_out");
-	lcd_showint(100,270, my_control.steer_output , 5);
-		lcd_showstr(0,290,"black");
-	lcd_showint(100,290, my_order.black , 5);
-//	draw_mid_line();
-//	Cross_Detect(); 
-//	Find_Up_Point( MT9V03X_H-1, 0 );
-//	Find_Down_Point( MT9V03X_H-1, 0 );
-//	ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-//	Draw_Track_Boundary();
- if(gpio_get_level(key_up)== 0)
+    // 以下为LCD调试信息显示区域（原有注释保留）
+//  lcd_showstr(0,110,"speed_err");
+//  lcd_showint(100,110, my_control.speed_lasterrL , 5);
+    lcd_showstr(0,110,"speed_pwm");  // 显示左轮PWM值
+    lcd_showint(100,110, my_control.pwm_l , 5);
+    lcd_showstr(0,130,"zebra");      // 显示斑马线计数
+    lcd_showint(100,130, my_order.zebra , 5);
+    lcd_showstr(0,90,"island");      // 显示环岛状态
+    lcd_showint(100,90, my_island.island_state  , 5);
+    lcd_showstr(0,150,"err");        // 显示当前控制误差
+    lcd_showint(100,150, my_control.err , 5);
+    lcd_showstr(0,170,"p");          // 显示方向P参数
+    lcd_showfloat(100,170, my_control.P_DIRE , 5,3);
+    lcd_showstr(0,190,"d");          // 显示方向D参数
+    lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
+    lcd_showstr(0,210,"set_speed");  // 显示设定速度
+    lcd_showint(100,210, my_control.Speed_Left_Set , 5);
+    lcd_showstr(0,230,"speed_L");    // 显示左轮编码器值
+    lcd_showint(100,230, my_control.encoderl , 5);
+    lcd_showstr(0,250,"speed_R");    // 显示右轮编码器值
+    lcd_showint(100,250, my_control.encoderr , 5);
+    lcd_showstr(0,270,"steer_out");  // 显示转向输出值
+    lcd_showint(100,270, my_control.steer_output , 5);
+    lcd_showstr(0,290,"black");      // 显示黑线检测状态
+    lcd_showint(100,290, my_order.black , 5);
+
+    // 以下为被注释的调试功能（保留原始注释）
+//  draw_mid_line();
+//  Cross_Detect(); 
+//  Find_Up_Point( MT9V03X_H-1, 0 );
+//  Find_Down_Point( MT9V03X_H-1, 0 );
+//  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
+//  Draw_Track_Boundary();
+
+    // 按键交互处理模块
+    if(gpio_get_level(key_up)== 0)  // 上键按下
     {
-   //   my_control.D_DIRE-=0.1;
-	//		my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
-			//	my_order.add++;
-			my_control.P_DIRE+=1;
-			  delay_ms(200);
-        lcd_clear();
+        // 原有调试代码保留
+        // my_control.D_DIRE-=0.1;
+        // my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
+        // my_order.add++;
+        
+        // 当前功能：增加方向P参数
+        my_control.P_DIRE+=1;
+        delay_ms(200);  // 防抖延时
+        lcd_clear();   // 清屏刷新
     }
-		 if(gpio_get_level(key_down)== 0)
+    
+    if(gpio_get_level(key_down)== 0)  // 下键按下
     {
-     //   my_control.D_DIRE-=0.1;
-			//	my_order.add--;
-			my_control.P_DIRE-=1;
-			  delay_ms(200);
-        lcd_clear();
-    }
-	 if(gpio_get_level(key_enter)== 0)
-    {
-			 my_control.Speed_Right_Set +=10;
+        // 原有调试代码保留
+        // my_control.D_DIRE-=0.1;
+        // my_order.add--;
+        
+        // 当前功能：减少方向P参数
+        my_control.P_DIRE-=1;
         delay_ms(200);
         lcd_clear();
-        
     }
-	 if(gpio_get_level(key_return)== 0)
-    {   
-			  my_order.encorder_time=0;
-				my_order.count_2s=0;
-			  my_order.go=1;
-			  my_order.show=0;
-			  my_menu.menu_open=0;
-			  delay_ms(200);
+    
+    if(gpio_get_level(key_enter)== 0)  // 确认键按下
+    {
+        // 当前功能：增加右侧设定速度
+        my_control.Speed_Right_Set +=10;
+        delay_ms(200);
         lcd_clear();
     }
-
-
-
-
+    
+    if(gpio_get_level(key_return)== 0)  // 返回键按下
+    {   
+        // 系统状态重置
+        my_order.encorder_time=0;  // 编码器计时清零
+        my_order.count_2s=0;       // 2秒计数器清零
+        my_order.go=1;             // 启动车辆
+        my_order.show=0;           // 关闭显示模式
+        my_menu.menu_open=0;       // 关闭菜单
+        delay_ms(200);             // 防抖延时
+        lcd_clear();               // 清屏刷新
+    }
 }
 void show_test()
 {

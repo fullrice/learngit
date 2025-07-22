@@ -64,22 +64,8 @@ void TIM1_UP_IRQHandler (void)
 void TIM2_IRQHandler (void)
 {
     // 此处编写用户代码
-//	  my_control.encoderl=encoder_get_count(TIM3_ENCODER);
-//	   encoder_clear_count(TIM3_ENCODER);
-//	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
-//	  encoder_clear_count(TIM4_ENCODER);
-	//speed_mps1 = encoder1 * 0.0102f;  // 假设 encoder1 是左电机
-	// speed_mps2 = encoder2 * 0.0102f;  // 假设 encoder1 是左电机
-  //  d++;
-//	Longest_White_Column();
-//	      	 my_control.encoderl=encoder_get_count(TIM3_ENCODER);
-//	   encoder_clear_count(TIM3_ENCODER);
-//	  my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
-//	  encoder_clear_count(TIM4_ENCODER);
- //  	PID_SPEED(my_control.encoderl/50,my_control.encoderr/50,150);
-	//my_order.count_2s++;
-	    my_order.black=0;
 	//出界
+	      my_order.black=0;
 				 for(int i=MT9V03X_H-3;i>=3;i--)
 			{
 				 if(my_image.image_two_value[i][MT9V03X_W/2]==0)
@@ -102,6 +88,7 @@ void TIM2_IRQHandler (void)
 	 //蜂鸣器
 	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
 	{
+//    速度决策（直道）
 //		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
 //		{
 //		
@@ -119,12 +106,12 @@ void TIM2_IRQHandler (void)
 //		 //  my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
 //		//	my_control.front=42 ;
 //		}
-////		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-////		{
-////		
-////		   my_control.Speed_Right_Set=300;
-////		 
-////		}
+//		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+//		{
+//		
+//		   my_control.Speed_Right_Set=300;
+//		 
+//		}
 //		else if(my_control.err<=5 || my_control.err>=-5 && my_island.island_state == 0)
 //		{
 //		  my_control.Speed_Right_Set=270;
@@ -145,21 +132,16 @@ void TIM2_IRQHandler (void)
 //		{
 //		   my_control.Speed_Right_Set=440;		
 //		}
-
-		//     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
+//     速度决策
+//     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
+//     正常方向环和速度环
 		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
-  //    PID_DIR(5);	
- //    Motor_Left(my_control.pwm_l+my_control.steer_output
     PID_DIR(2);	
-	   Motor_Left(my_control.pwm_l-my_control.steer_output);
-//	//+my_control.steer_output
-//    	Motor_Right(my_control.pwm_r-my_control.steer_output);
-   	  Motor_Right(my_control.pwm_r+my_control.steer_output);
-	//-my_control.steer_output
-  //	  Motor_Left(1000);
-  //  Motor_Right(1000); 
- 	 //  PID_DIR(2);	
- 
+	  Motor_Left(my_control.pwm_l-my_control.steer_output);
+   	Motor_Right(my_control.pwm_r+my_control.steer_output);
+//	  Motor_Left(1000);
+//  Motor_Right(1000); 
+
 	}
 	else
 	{
@@ -167,10 +149,7 @@ void TIM2_IRQHandler (void)
 	   Motor_Left(0);
 	}
 	
-	 // Motor_Left(1000);
-  //  Motor_Right(1000); 
-	  //	  Motor_Left(1500);
- //   Motor_Right(700); 
+
     // 此处编写用户代码
     TIM2->SR &= ~TIM2->SR;                                                      // 清空中断状态
 }
@@ -218,6 +197,7 @@ void TIM5_IRQHandler (void)
 void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
+//     开始的加速
 //     my_order.count_2s++;
 //	   if(my_order.count_2s>=0 && my_order.count_2s<=50)//1s
 //					{
@@ -228,6 +208,7 @@ void TIM6_IRQHandler (void)
 //					   my_control.Speed_Right_Set=340;
 //					
 //					}
+//    编码器的读取
 		 my_order.encorder_time+=my_control.encoderl;
      my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
@@ -235,19 +216,13 @@ void TIM6_IRQHandler (void)
 	   encoder_clear_count(TIM4_ENCODER);
 //	  Motor_Left(1000);
   //  Motor_Right(1000); 
- //   CascadeControl(my_control.encoderl,my_control.encoderr,my_control.Speed_Right_Set);
-//				  Motor_Left(my_control.pwm_l);
-			// CascadeControl(my_control.encoder1,my_control.encoder2,3000);
-//    	  	Motor_Right(my_control.pwm_r);
-	//   count_10s++;
-	/*原地并环测试*/
 
 	/*原地测试*/
 	    //       CascadeControl(my_control.encoderl,my_control.encoderr,0);
 		//					Motor_Left(my_control.pwm_l);
 	//						Motor_Right(my_control.pwm_r); my_image.Longest_White_Column_Right[0] >=40 
 	
-//	/*转向测试*/
+	/*转向测试*/
 //	if(my_order.go == 1 )
 //			{
 //				       
@@ -332,55 +307,9 @@ void TIM6_IRQHandler (void)
 void TIM7_IRQHandler (void)
 {
     // 此处编写用户代码
-//    if(mt9v03x_finish_flag)
-//			 {
-//				  Threshold=My_Adapt_Threshold((uint8 *)mt9v03x_image,MT9V03X_W, MT9V03X_H);
-//				  Image_Binarization(Threshold);//图像二值化
-//			   // Longest_White_Column();
-//				  mt9v03x_finish_flag=0;//标志位清除，自行准备采集下一帧数据
-//				 }
-//			 else{}  
-//	//			  ips200_show_gray_image(0, 0, (const uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-//	  //     draw_mid_line();
-//   // 	   ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-//			   Longest_White_Column();
-//				 Monotonicity_Change_Right(10,70);
-//				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-//				 island_detect(); 
-//				 if(my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=50)
-//				 {
-//				    Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-//	       }
-					 // 	 island_detect(); 
-				 /**/
-	//				draw_mid_line();
-	//				draw_boundary_lines_wide();
-		//		  draw_mid_line();
-   //     draw_boundary_lines_wide();
-				// Zebra_Detect();	
-		   //    my_control.err= err_sum_average(35,40);  //35 40
-//				 	if(my_control.err>=15  || my_control.err<=-15)
-//					{
-//						my_control.Speed_Right_Set=250 ;
-
-//					}
-//					else if(my_control.err>=7  || my_control.err<=-7)
-//					{
-//					    my_control.Speed_Right_Set=260   ;
-//					}
-//					else
-//					{
-//						my_control.Speed_Right_Set=280;
-//					}
-					
-			//	 Cross_Detect(); 
-			//  	 draw_boundary_lines();
-	   	//	 my_control.err=Err_Sum()*1.1;
 				
-				
+//			标志的检测位
 				 Zebra_Detect();
-//         Continuity_Change_Right(MT9V03X_H-1-5,10);
-//         Continuity_Change_Left(MT9V03X_H-1-5,10);
         if(my_island.open==1)
 				{
 				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);
@@ -391,37 +320,7 @@ void TIM7_IRQHandler (void)
 				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
 				 island_detect(); 
 				}
-//				 	   if(my_island.island_state==1)  //拐点消失
-//        {
-//          my_island.state1_count+=my_control.encoderl;
-//					if(my_island.state1_count>=13000 )//找到的单调点过于向下，开始进入
-//            {   
-//                my_island.island_state =4;
-//							  my_island.state2_count=0;
-//            }
-//        }
-//					 	   if(my_island.island_state==4)  //拐点消失
-//        {
-//          my_island.state2_count+=my_control.encoderl;
-//					if(my_island.state2_count>=9000)//找到的单调点过于向下，开始进入
-//            {   
-//                my_island.island_state =0;
-							  
-//            }
-//        }
-//		   		 island_detect(); 
-//				 if(my_island.island_state==3)
-//				 {
-//					  Left_Add_Line(my_image.shortest_White_Column_Left[1],MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]]-10,40  ,MT9V03X_H-5);//x1是起点
-////				    my_island.k=(float)((float)(MT9V03X_H-my_image.white_line[my_image.shortest_White_Column_Left[1]])/(float)(MT9V03X_W-20-my_image.shortest_White_Column_Left[1]));
-////            K_Draw_Line(my_island.k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
-////            Longest_White_Column();//刷新边界数据
-//				 }
-//				 if(my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=50)
-//				 {
-//				    Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-//	       }
-//    // 此处编写用户代码
+//     此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
 }
 
