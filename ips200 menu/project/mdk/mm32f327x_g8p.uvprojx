@@ -507,14 +507,14 @@
               <FilePath>..\..\libraries\zf_common\zf_common_debug.c</FilePath>
             </File>
             <File>
-              <FileName>zf_common_debug.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\libraries\zf_common\zf_common_debug.h</FilePath>
-            </File>
-            <File>
               <FileName>zf_common_fifo.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\libraries\zf_common\zf_common_fifo.c</FilePath>
+            </File>
+            <File>
+              <FileName>zf_common_debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\libraries\zf_common\zf_common_debug.h</FilePath>
             </File>
             <File>
               <FileName>zf_common_fifo.h</FileName>
