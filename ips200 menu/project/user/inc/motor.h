@@ -3,10 +3,10 @@
 /*头文件*/
 #include "zf_common_headfile.h"
 /*宏定义*/
-#define SPEED_MAX            (6000)                                               // 最大 MAX_DUTY% 占空比
-#define SPEED_MIN            (-6000 )                                               // 最大 MAX_DUTY% 占空比
-#define DIFF_MAX            (15000 )        //4000                7000                       // 最大 MAX_DUTY% 占空比
-#define DIFF_MIN            (-15000  )        //4000                                       // 最大 MAX_DUTY% 占空比
+#define SPEED_MAX            (5000)                                               // 最大 MAX_DUTY% 占空比
+#define SPEED_MIN            (-5000 )                                               // 最大 MAX_DUTY% 占空比
+#define DIFF_MAX            (9000 )        //4000                7000                       // 最大 MAX_DUTY% 占空比
+#define DIFF_MIN            (-9000  )        //4000                                       // 最大 MAX_DUTY% 占空比
 #define DIR_L                (A2 )
 #define PWM_L               (TIM5_PWM_CH4_A3)
 
@@ -50,7 +50,7 @@ float my_abs(float x);
 float Fuzzy_P(int E,int EC);
 /*速度*/
 void CascadeControl(float speed_l, float speed_r,int DesireSpeed);
-void PID_DIR(int offset);
+void PID_DIR(float offset);
 void PID_SPEED(float speed_l, float speed_r,int DesireSpeed);
 void PID2_SPEED(float speed, int DesireSpeed);
 #endif

@@ -11,7 +11,7 @@ order my_order={
   .count_2s=0,
 	.black=0,
 	.start=0,
-	.add=-39,
+	.add=-30    ,
 	.zebra=0,
 	.beep_count=0,
 	.count=0,
@@ -364,7 +364,7 @@ void Zebra_Detect(void)
     if(change>=25)
     {
  
-			my_order.zebra=1;  //遇上斑马线了
+			my_order.zebra+=1;  //遇上斑马线了
     }
    
 }

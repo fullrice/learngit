@@ -611,6 +611,8 @@ void Camera_show()//22
     lcd_showint(100,150, my_control.err , 5);
     lcd_showstr(0,170,"p");          // 显示方向P参数
     lcd_showfloat(100,170, my_control.P_DIRE , 5,3);
+//		lcd_showstr(0,170,"add");          // 显示方向P参数
+//    lcd_showfloat(100,170, my_order.add  , 5,3);
     lcd_showstr(0,190,"d");          // 显示方向D参数
     lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
     lcd_showstr(0,210,"set_speed");  // 显示设定速度
@@ -638,7 +640,7 @@ void Camera_show()//22
         // 原有调试代码保留
         // my_control.D_DIRE-=0.1;
         // my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
-        // my_order.add++;
+      //   my_order.add++;
         
         // 当前功能：增加方向P参数
         my_control.P_DIRE+=1;
@@ -650,7 +652,7 @@ void Camera_show()//22
     {
         // 原有调试代码保留
         // my_control.D_DIRE-=0.1;
-        // my_order.add--;
+     //    my_order.add--;
         
         // 当前功能：减少方向P参数
         my_control.P_DIRE-=1;
@@ -662,7 +664,7 @@ void Camera_show()//22
     {
         // 当前功能：增加右侧设定速度
       //  my_control.Speed_Right_Set +=10;
-			   my_control.D_DIRE-=0.1;
+			   my_control.D_DIRE-=1  ;
         delay_ms(200);
         lcd_clear();
     }

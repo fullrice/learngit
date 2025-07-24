@@ -86,9 +86,33 @@ void TIM2_IRQHandler (void)
 			}
 		//Zebra_Detect();		
 	 //蜂鸣器
-	if(my_order.go==1 && my_order.zebra==0)//没看到斑马线并且发车     
+	if(my_order.go==1 && my_order.zebra<100  )//没看到斑马线并且发车     
 	{
 //    速度决策（直道）
+//		 if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+//		 {
+//		    my_control.Speed_Right_Set=300;	 
+//		 }
+//		 else
+//		 {
+//		    my_control.Speed_Right_Set=320;	 
+//		 }
+//		  if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
+//		 {
+//			 my_control.P_DIRE=my_order.add;
+//		//	  my_control.P_SPEED=6.39;  
+//		//	  my_control.Speed_Right_Set=260;
+//		//	  my_control.I_SPEED=0.002;
+//		//	  my_control.D_DIRE=-1;
+//		 }
+//		 else
+//		 {
+//		    my_control.P_DIRE=my_order.add-2;//-3
+//			//  my_control.Speed_Right_Set=240;
+//		//	  my_control.P_SPEED=6.29;
+//		//	 	my_control.I_SPEED=0.0015;
+//      //  my_control.D_DIRE=-1;
+//		 }
 //		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
 //		{
 //		
@@ -135,14 +159,23 @@ void TIM2_IRQHandler (void)
 //     速度决策
 //     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
 //     正常方向环和速度环
-		PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
-    PID_DIR(2);	
+  //实际速度限幅
+//	if(my_control.encoderl>=310 || my_control.encoderr >=310)
+//	{
+//	   my_control.P_DIRE=my_order.add-3;
+//	}
+//	else
+//	{
+//	    my_control.P_DIRE=my_order.add;
+//	}
+   	PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
+    PID_DIR(2.2);	
 	  Motor_Left(my_control.pwm_l-my_control.steer_output);
    	Motor_Right(my_control.pwm_r+my_control.steer_output);
 //	  Motor_Left(1000);
-//  Motor_Right(1000); 
+//    Motor_Right(1000); 
 
-	}
+}
 	else
 	{
      Motor_Right(0);
@@ -209,7 +242,7 @@ void TIM6_IRQHandler (void)
 //					
 //					}
 //    编码器的读取
-		 my_order.encorder_time+=my_control.encoderl;
+//		 my_order.encorder_time+=my_control.encoderl;
      my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
 	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);

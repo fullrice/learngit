@@ -1,4 +1,4 @@
-/*********************************************************************************************************************
+/***************** 吧****************************************************************************************************
 * MM32F327X-G8P Opensourec Library 即（MM32F327X-G8P 开源库）是一个基于官方 SDK 接口的第三方开源库
 * Copyright (c) 2022 SEEKFREE 逐飞科技
 * 
@@ -144,7 +144,7 @@ int main(void)
         // menu_main();                     // 调试用：显示主菜单（当前被注释）
         // show_test();                      // 调试用：测试显示（当前被注释）
 
-        /* 图像采集与处理 */
+        /* 图像采  集与处理 */
         if(mt9v03x_finish_flag)             // 检查摄像头是否完成一帧图像采集
         {
             // 计算自适应阈值（动态调整二值化阈值）
@@ -166,11 +166,23 @@ int main(void)
             // 绘制出环辅助线（基于左边界下降点坐标）
             xieji(my_island.left_down_line[1], 70, my_island.left_down_line[0], 20);
         }
+//       if(my_control.last_err>=5)
+//			 {
+//			    my_control.front=27;
+//			 
+//			 }
+//			 else
+//			 {
+//				 my_control.front=30;
 
+//			 }
         /* 控制误差计算 */
         // 计算30-36行图像的平均误差（用于方向控制）
-        my_control.err = err_sum_average(35,40);  
-
+     //  my_control.err = err_sum_average(my_control.front,my_control.front+2);  
+		  my_control.err = err_sum_average(33,36);  
+//  
+     //   my_control.err =Err_Sum();
+   //    my_control.last_err=my_control.err;
         /* 环岛强制纠偏（状态4/5时覆盖误差） */
         if(my_island.island_state == 5 || my_island.island_state == 4)  
         {
