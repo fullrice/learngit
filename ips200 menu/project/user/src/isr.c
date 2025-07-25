@@ -96,23 +96,29 @@ void TIM2_IRQHandler (void)
 //		 else
 //		 {
 //		    my_control.Speed_Right_Set=320;	 
-//		 }
-//		  if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-//		 {
-//			 my_control.P_DIRE=my_order.add;
-//		//	  my_control.P_SPEED=6.39;  
-//		//	  my_control.Speed_Right_Set=260;
-//		//	  my_control.I_SPEED=0.002;
-//		//	  my_control.D_DIRE=-1;
-//		 }
-//		 else
-//		 {
-//		    my_control.P_DIRE=my_order.add-2;//-3
-//			//  my_control.Speed_Right_Set=240;
-//		//	  my_control.P_SPEED=6.29;
-//		//	 	my_control.I_SPEED=0.0015;
-//      //  my_control.D_DIRE=-1;
-//		 }
+////		 }
+		  if((my_control.err<=2 || my_control.err>=-2) && my_image.Search_Stop_Line>=68  )//&& my_control.encoderl<=300 && my_control.encoderr<=300) //直道
+		 {
+//			    my_control.max_encoderl = (my_control.max_encoderl < my_control.encoderl) ? my_control.encoderl : my_control.max_encoderl;
+//		      my_control.max_encoderr = (my_control.max_encoderr < my_control.encoderr) ? my_control.encoderr : my_control.max_encoderr;
+
+  		    	 my_control.P_DIRE=my_order.add;
+//			  my_control.P_SPEED=9.7 ;  
+		//	  my_control.Speed_Right_Set=170;
+			 my_control.Speed_Right_Set=my_control.Speed_Left_Set;
+//			  my_control.I_SPEED=0.003  ;
+		//	  my_control.D_DIRE=-1;
+		 }
+		 else  
+		 {
+		    my_control.P_DIRE=my_order.add-2  ;//-3
+		//	  my_control.Speed_Right_Set=150;  
+			 			 my_control.Speed_Right_Set=my_control.Speed_Left_Set-20;
+
+//			  my_control.P_SPEED=9.39;
+//			 	my_control.I_SPEED=0.002  ;
+      //  my_control.D_DIRE=-1;
+		 }//-33 170 150   -33 150 120  -28 150 130
 //		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
 //		{
 //		
@@ -168,6 +174,9 @@ void TIM2_IRQHandler (void)
 //	{
 //	    my_control.P_DIRE=my_order.add;
 //	}
+//		 my_control.max_encoderl = (my_control.max_encoderl < my_control.encoderl) ? my_control.encoderl : my_control.max_encoderl;
+//		 my_control.max_encoderr = (my_control.max_encoderr < my_control.encoderr) ? my_control.encoderr : my_control.max_encoderr;
+
    	PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
     PID_DIR(2.2);	
 	  Motor_Left(my_control.pwm_l-my_control.steer_output);

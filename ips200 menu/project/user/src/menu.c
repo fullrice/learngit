@@ -609,22 +609,28 @@ void Camera_show()//22
     lcd_showint(100,90, my_island.island_state  , 5);
     lcd_showstr(0,150,"err");        // 显示当前控制误差
     lcd_showint(100,150, my_control.err , 5);
-    lcd_showstr(0,170,"p");          // 显示方向P参数
-    lcd_showfloat(100,170, my_control.P_DIRE , 5,3);
-//		lcd_showstr(0,170,"add");          // 显示方向P参数
+// 		lcd_showstr(0,170,"add");          // 显示方向P参数
 //    lcd_showfloat(100,170, my_order.add  , 5,3);
+		lcd_showstr(0,170,"p");          // 显示方向P参数
+    lcd_showfloat(100,170, my_control.P_DIRE  , 5,3);
     lcd_showstr(0,190,"d");          // 显示方向D参数
     lcd_showfloat(100,190, my_control.D_DIRE , 5,3);
-    lcd_showstr(0,210,"set_speed");  // 显示设定速度
+//    lcd_showstr(0,210,"set_speed");  // 显示设定速度
+//    lcd_showint(100,210, my_control.Speed_Right_Set , 5);
+		    lcd_showstr(0,210,"set_speed");  // 显示设定速度
     lcd_showint(100,210, my_control.Speed_Left_Set , 5);
     lcd_showstr(0,230,"speed_L");    // 显示左轮编码器值
     lcd_showint(100,230, my_control.encoderl , 5);
     lcd_showstr(0,250,"speed_R");    // 显示右轮编码器值
     lcd_showint(100,250, my_control.encoderr , 5);
-    lcd_showstr(0,270,"steer_out");  // 显示转向输出值
-    lcd_showint(100,270, my_control.steer_output , 5);
-    lcd_showstr(0,290,"black");      // 显示黑线检测状态
-    lcd_showint(100,290, my_order.black , 5);
+//    lcd_showstr(0,270,"steer_out");  // 显示转向输出值
+//    lcd_showint(100,270, my_control.steer_output , 5);
+    lcd_showstr(0,270,"max_right");  // 显示转向输出值
+    lcd_showint(100,270, my_control.max_encoderr , 5);
+		lcd_showstr(0,290,"max_right");      // 显示黑线检测状态
+    lcd_showint(100,290, my_control.max_encoderl , 5);
+//    lcd_showstr(0,290,"black");      // 显示黑线检测状态
+//    lcd_showint(100,290, my_order.black , 5);
 
     // 以下为被注释的调试功能（保留原始注释）
 //  draw_mid_line();
@@ -640,10 +646,10 @@ void Camera_show()//22
         // 原有调试代码保留
         // my_control.D_DIRE-=0.1;
         // my_control.Speed_Left_Set=my_control.Speed_Left_Set-20;
-      //   my_order.add++;
+         my_order.add++;
         
         // 当前功能：增加方向P参数
-        my_control.P_DIRE+=1;
+          my_control.P_DIRE+=1;
         delay_ms(200);  // 防抖延时
         lcd_clear();   // 清屏刷新
     }
@@ -652,10 +658,10 @@ void Camera_show()//22
     {
         // 原有调试代码保留
         // my_control.D_DIRE-=0.1;
-     //    my_order.add--;
+         my_order.add--;  
         
         // 当前功能：减少方向P参数
-        my_control.P_DIRE-=1;
+          my_control.P_DIRE-=1;
         delay_ms(200);
         lcd_clear();
     }
@@ -663,8 +669,8 @@ void Camera_show()//22
     if(gpio_get_level(key_enter)== 0)  // 确认键按下
     {
         // 当前功能：增加右侧设定速度
-      //  my_control.Speed_Right_Set +=10;
-			   my_control.D_DIRE-=1  ;
+        my_control.Speed_Left_Set -=10;
+			//   my_control.D_DIRE-=0.1  ;
         delay_ms(200);
         lcd_clear();
     }

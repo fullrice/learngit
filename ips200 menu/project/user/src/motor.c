@@ -107,17 +107,17 @@ int Weight[80] = {
 //};
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 260,  //250
-    .Speed_Right_Set = 260,
+    .Speed_Left_Set = 170 ,  //250
+    .Speed_Right_Set = 170,
     .Straight_Speed = 0,
     .err = 0.0f,//左正右负，并且保证向左转的时候左轮小于右轮，那么
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -32           ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
+    .P_DIRE = -33              ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
     .D_DIRE = 0         , //-0.2  -0.3  -0.2 微调
-    .P_SPEED=6.39  , //5.69    5.99(0.002) 
-    .I_SPEED =0.002    , //0.1   0.001  5.69（0.0015）
+    .P_SPEED=10.39  , //5.69    5.99(0.002)  6.39
+    .I_SPEED =0.003        , //0.1   0.001  5.69（0.0015）
 	  .pwm_l=0.0f   ,
 	  .Shift_Ratio=0.0f,
 	  .pwm_r=0.0f,
@@ -125,7 +125,9 @@ control my_control = {
 	  .encoderr=0,//1400
     .steer_output=0,
 	  .speed_err=0,
-	  .front=33
+	  .front=33,
+	  .max_encoderr=0,
+		.max_encoderl=0
 };
 //0否定
 
@@ -227,7 +229,7 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 			//双边
 				for(int i=start_point;i<end_point;i++)
 				{
-						err+=(MT9V03X_W/1.9-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2
+						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2 1.9  
 				}
 		}
 		else if(my_island.island_state==1 || my_island.island_state==2 )
@@ -236,14 +238,16 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 
 						for(int i=start_point;i<end_point;i++)
 						{
-								err+=(MT9V03X_W/1.8-Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  
+//							err+=(MT9V03X_W/1.8-Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  
+                err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
 						}
 	   }
 		else if(my_island.island_state==3 || my_island.island_state==5)
 		{
 		   for(int i=start_point;i<end_point;i++)
 						{
-								err += ( (MT9V03X_W/1.8 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+								//err += ( (MT9V03X_W/1.8 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+				    err += ( my_image.Left_Line[i] - (MT9V03X_W/2 - Standard_Road_Wide[i]/2) );
 						}	
 		}
 			

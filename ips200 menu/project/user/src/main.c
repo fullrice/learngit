@@ -167,11 +167,11 @@ int main(void)
             xieji(my_island.left_down_line[1], 70, my_island.left_down_line[0], 20);
         }
 //       if(my_control.last_err>=5)
-//			 {
+//			 {  
 //			    my_control.front=27;
 //			 
 //			 }
-//			 else
+//			 else  
 //			 {
 //				 my_control.front=30;
 
@@ -179,14 +179,14 @@ int main(void)
         /* 控制误差计算 */
         // 计算30-36行图像的平均误差（用于方向控制）
      //  my_control.err = err_sum_average(my_control.front,my_control.front+2);  
-		  my_control.err = err_sum_average(33,36);  
+		  my_control.err = err_sum_average(33,36);   //33 36
 //  
      //   my_control.err =Err_Sum();
    //    my_control.last_err=my_control.err;
         /* 环岛强制纠偏（状态4/5时覆盖误差） */
         if(my_island.island_state == 5 || my_island.island_state == 4)  
         {
-            my_control.err = -30;  // 强制设定固定偏差，使车辆保持环岛运动
+            my_control.err = 30;  // 强制设定固定偏差，使车辆保持环岛运动
         }
 
         /* 系统延时（控制循环频率） */

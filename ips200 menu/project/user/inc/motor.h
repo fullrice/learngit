@@ -20,6 +20,8 @@ typedef struct {
     int Straight_Speed;     // 直道高速   
 	  volatile int encoderr;
 	  volatile int encoderl;
+	  volatile int max_encoderr;
+    volatile int max_encoderl;
 	  volatile int front;
     // 控制参数
     volatile float err;              // 当前误差
