@@ -60,3 +60,6 @@ dkms.conf
 
 ips200 menu/.vscode
 ips200 menu/libraries
+ips200 menu/project/mdk
+ips200 menu/project/iar
+ips200 menu/project/code
