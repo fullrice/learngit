@@ -37,6 +37,7 @@
 #include "motor.h"
 #include "control.h"
 #include "image.h"
+#include "660.h"
 #include "isr.h"
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
@@ -46,7 +47,7 @@
 /*
 要去记录
 修改代码
-修改代码2
+修改代码2  
 
 
 
@@ -86,7 +87,7 @@ void all_init(void)
     //============================== PWM初始化 ================================//
     pwm_init(PWM_L, 17000, 0);         // PWM 通道初始化频率 17KHz 占空比初始为 0    
     pwm_init(PWM_R, 17000, 0);         // PWM 通道初始化频率 17KHz 占空比初始为 0
-
+    imu660ra_init();
     //============================= 编码器初始化 ==============================//
     /* 编码器接口 */
     encoder_quad_init(TIM3_ENCODER, TIM3_ENCODER_CH1_B4, TIM3_ENCODER_CH2_B5);
@@ -113,6 +114,7 @@ void all_init(void)
       interrupt_set_priority(TIM6_IRQn, 1);
 			interrupt_set_priority(TIM7_IRQn, 2);
 			interrupt_set_priority(TIM2_IRQn, 3);
+
     //  pit_ms_init(TIM2_PIT, 100);
     
     /* Flash操作（注释状态） */
@@ -129,7 +131,7 @@ float steer_output;         // 方向环输出（用于速度修正的控制量�
 int8 duty = 0;              // 当前PWM占空比（控制电机转速）
 bool dir1 = true;           // 电机方向标志位（true=正转，false=反转）
 
-int main(void)
+int main(void)  
 {
     /* 系统初始化（硬件外设、摄像头、电机、传感器等） */
     all_init();
@@ -138,12 +140,11 @@ int main(void)
     while(1)
     {
         /* 图像处理与显示模块（调试时可启用） */
-        // island_show();                    // 调试用：显示环岛检测信息（当前被注释）
-        Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
+          // island_show();                    // 调试用：显示环岛检测信息（当前被注释）
+                 //  Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
         // menu_sub();                       // 调试用：显示子菜单（当前被注释）
         // menu_main();                     // 调试用：显示主菜单（当前被注释）
         // show_test();                      // 调试用：测试显示（当前被注释）
-
         /* 图像采  集与处理 */
         if(mt9v03x_finish_flag)             // 检查摄像头是否完成一帧图像采集
         {
@@ -151,7 +152,7 @@ int main(void)
             Threshold = My_Adapt_Threshold((uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H);
             
             // 图像二值化处理（将灰度图转为黑白图）
-            Image_Binarization(Threshold);
+            Image_Binarization(Threshold  );//加大阈值来增加对应的图象值更让偏向黑色
             
             // 清除图像采集完成标志（准备下一帧采集）
             mt9v03x_finish_flag = 0;
@@ -160,35 +161,41 @@ int main(void)
         /* 赛道中线提取 */
         Longest_White_Column();              // 通过检测最长白列提取赛道中线
 
-        /* 环岛特殊处理（状态5：出环阶段） */
-        if(my_island.island_state == 5)      // 检查是否处于环岛状态5
-        {
-            // 绘制出环辅助线（基于左边界下降点坐标）
-            xieji(my_island.left_down_line[1], 70, my_island.left_down_line[0], 20);
-        }
-//       if(my_control.last_err>=5)
-//			 {  
-//			    my_control.front=27;
-//			 
-//			 }
-//			 else  
-//			 {
-//				 my_control.front=30;
+//        /* 环岛特殊处理（状态5：出环阶段） */
+//        if(my_island.island_state == 5)      // 检查是否处于环岛状态5
+//        {
+//            // 绘制出环辅助线（基于左边界下降点坐标）
+//            xieji(my_island.left_down_line[1], 70, my_island.left_down_line[0], 20);
+//        }
+////       if(my_control.last_err>=5)
+////			 {  
+////			    my_control.front=27;
+////			 
+////			 }
+////			 else  
+////			 {
+////				 my_control.front=30;
 
-//			 }
-        /* 控制误差计算 */
-        // 计算30-36行图像的平均误差（用于方向控制）
-     //  my_control.err = err_sum_average(my_control.front,my_control.front+2);  
-		  my_control.err = err_sum_average(33,36);   //33 36
-//  
-     //   my_control.err =Err_Sum();
-   //    my_control.last_err=my_control.err;
-        /* 环岛强制纠偏（状态4/5时覆盖误差） */
-        if(my_island.island_state == 5 || my_island.island_state == 4)  
-        {
-            my_control.err = 30;  // 强制设定固定偏差，使车辆保持环岛运动
-        }
+////			 }
+//        /* 控制误差计算 */
+//        // 计算30-36行图像的平均误差（用于方向控制）
+          my_control.err = err_sum_average(my_control.front,my_control.front+3);  
+		//			         Camera_pdd_show();
+            pdd_sub_menu_main();
+////					lcd_showstr(0,190,"ERR");
+////          lcd_showint(100,190, my_control.err , 5);
 
+//		  my_control.err = err_sum_average(my_control.front,my_control.front+3 );   //33 36  39 42
+//       //    lcd_showint(100,130, my_order.go , 5);
+//   
+  //        my_control.err =Err_Sum();
+//   //    my_control.last_err=my_control.err;
+//        /* 环岛强制纠偏（状态4/5时覆盖误差） */
+//        if(my_island.island_state == 5 || my_island.island_state == 4)  
+//        {
+//            my_control.err = 30;  // 强制设定固定偏差，使车辆保持环岛运动
+//        }
+   
         /* 系统延时（控制循环频率） */
         system_delay_ms(1);  // 保持1ms控制周期（确保实时性）
     }

@@ -77,7 +77,7 @@ static int16 mt9v03x_set_confing_buffer[MT9V03X_CONFIG_FINISH][2]=
     {MT9V03X_SET_ROW,           MT9V03X_H},                                     // 图像行数量
     {MT9V03X_LR_OFFSET,         MT9V03X_LR_OFFSET_DEF},                         // 图像左右偏移量
     {MT9V03X_UD_OFFSET,         MT9V03X_UD_OFFSET_DEF},                         // 图像上下偏移量
-    {MT9V03X_GAIN,              MT9V03X_GAIN_DEF},                              // 图像增益
+    {MT9V03X_GAIN,               },                              // 图像增益
     {MT9V03X_PCLK_MODE,         MT9V03X_PCLK_MODE_DEF},                         // 像素时钟模式
 };
 

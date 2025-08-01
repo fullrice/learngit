@@ -433,6 +433,11 @@
               <FileType>5</FileType>
               <FilePath>.\MENU.txt</FilePath>
             </File>
+            <File>
+              <FileName>660.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\660.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -472,6 +477,11 @@
               <FileName>image_test.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\image_test.h</FilePath>
+            </File>
+            <File>
+              <FileName>660.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\660.h</FilePath>
             </File>
           </Files>
         </Group>

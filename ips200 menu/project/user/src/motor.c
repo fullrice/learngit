@@ -1,6 +1,7 @@
 #include "motor.h"
 #include "image.h"
 #include "control.h"
+#include "660.h"
 
 #include <math.h>
 #define PB  6
@@ -114,10 +115,10 @@ control my_control = {
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
-    .P_DIRE = -33              ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
+    .P_DIRE = -30              ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
     .D_DIRE = 0         , //-0.2  -0.3  -0.2 微调
-    .P_SPEED=10.39  , //5.69    5.99(0.002)  6.39
-    .I_SPEED =0.003        , //0.1   0.001  5.69（0.0015）
+    .P_SPEED=14.39  , //5.69    5.99(0.002)  6.39 10.39  12.39
+    .I_SPEED =0.004        , //0.1   0.001  5.69（0.0015）0.003
 	  .pwm_l=0.0f   ,
 	  .Shift_Ratio=0.0f,
 	  .pwm_r=0.0f,
@@ -125,9 +126,11 @@ control my_control = {
 	  .encoderr=0,//1400
     .steer_output=0,
 	  .speed_err=0,
-	  .front=33,
+	  .front=22        ,
 	  .max_encoderr=0,
-		.max_encoderl=0
+		.max_encoderl=0,
+		.right_offset=0,
+		.left_offset=0
 };
 //0否定
 

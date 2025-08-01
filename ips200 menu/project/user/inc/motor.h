@@ -34,6 +34,8 @@ typedef struct {
 		volatile float P_SPEED;
 		volatile float I_SPEED;
 	  volatile float Shift_Ratio;
+		volatile float left_offset;
+		volatile float right_offset;
 	
 	//设置电机
 	  float pwm_l;

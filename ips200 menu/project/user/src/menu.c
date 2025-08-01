@@ -3,6 +3,8 @@
 #include "image.h"
 #include "motor.h"
 #include "control.h"
+#include "660.h"
+
 void Menu_show_1();
 void test1();
 void test2();
@@ -168,18 +170,18 @@ void Menu_show_1()//1
 }
 void flash_read_speed()
 {
-   flash_read_page_to_buffer(10,1);  
-   my_control.P_SPEED= flash_union_buffer[0].float_type;
-   my_control.I_SPEED= flash_union_buffer[1].float_type;
+ //  flash_read_page_to_buffer(10,1);  
+ //  my_control.P_SPEED= flash_union_buffer[0].float_type;
+//   my_control.I_SPEED= flash_union_buffer[1].float_type;
 }
 
 void flash_write_speed()
 {
-    flash_buffer_clear();
-		flash_union_buffer[0].float_type  =my_control.P_SPEED;  
-	  flash_union_buffer[1].float_type  =my_control.I_SPEED;  
-		flash_erase_page(10,1);
-	  flash_write_page_from_buffer(10,1);        // 向指定 Flash 扇区的页码写入缓冲区数据
+  //  flash_buffer_clear();
+	//	flash_union_buffer[0].float_type  =my_control.P_SPEED;  
+	//  flash_union_buffer[1].float_type  =my_control.I_SPEED;  
+//		flash_erase_page(10,1);
+//	  flash_write_page_from_buffer(10,1);        // 向指定 Flash 扇区的页码写入缓冲区数据
 
 }
 void control_show()//23
@@ -601,12 +603,16 @@ void Camera_show()//22
     // 以下为LCD调试信息显示区域（原有注释保留）
 //  lcd_showstr(0,110,"speed_err");
 //  lcd_showint(100,110, my_control.speed_lasterrL , 5);
-    lcd_showstr(0,110,"speed_pwm");  // 显示左轮PWM值
-    lcd_showint(100,110, my_control.pwm_l , 5);
+//    lcd_showstr(0,110,"speed_pwm");  // 显示左轮PWM值
+//    lcd_showint(100,110, my_control.pwm_l , 5);
+		    lcd_showstr(0,110,"go");  // 显示左轮PWM值
+    lcd_showint(100,110, my_order.go , 5);
     lcd_showstr(0,130,"zebra");      // 显示斑马线计数
     lcd_showint(100,130, my_order.zebra , 5);
-    lcd_showstr(0,90,"island");      // 显示环岛状态
-    lcd_showint(100,90, my_island.island_state  , 5);
+//    lcd_showstr(0,90,"island");      // 显示环岛状态
+//    lcd_showint(100,90, my_island.island_state  , 5);
+		lcd_showstr(0,90,"p_speed");      // 显示环岛状态
+    lcd_showint(100,90, my_control.P_SPEED  , 5);
     lcd_showstr(0,150,"err");        // 显示当前控制误差
     lcd_showint(100,150, my_control.err , 5);
 // 		lcd_showstr(0,170,"add");          // 显示方向P参数
@@ -669,8 +675,8 @@ void Camera_show()//22
     if(gpio_get_level(key_enter)== 0)  // 确认键按下
     {
         // 当前功能：增加右侧设定速度
-        my_control.Speed_Left_Set -=10;
-			//   my_control.D_DIRE-=0.1  ;
+      //  my_control.Speed_Left_Set -=10;
+			   my_control.D_DIRE-=1  ;
         delay_ms(200);
         lcd_clear();
     }

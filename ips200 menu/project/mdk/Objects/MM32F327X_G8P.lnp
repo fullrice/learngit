@@ -7,6 +7,7 @@
 ".\objects\control.o"
 ".\objects\motor_test.o"
 ".\objects\image_test.o"
+".\objects\660.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"
