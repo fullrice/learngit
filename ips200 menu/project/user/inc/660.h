@@ -12,7 +12,7 @@ typedef struct
 }pdd;
 
 extern pdd my_pdd;
-
+void menu_load(void);
 void PDD_location(float offset);
 void Camera_pdd_show();
 //函数

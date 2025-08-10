@@ -5,9 +5,9 @@
 /*宏定义*/
 #define SPEED_MAX            (5000)                                               // 最大 MAX_DUTY% 占空比
 #define SPEED_MIN            (-5000 )                                               // 最大 MAX_DUTY% 占空比
-#define DIFF_MAX            (9000 )        //4000                7000                       // 最大 MAX_DUTY% 占空比
-#define DIFF_MIN            (-9000  )        //4000                                       // 最大 MAX_DUTY% 占空比
-#define DIR_L                (A2 )
+#define DIFF_MAX            (5000 )        //4000                7000                       // 最大 MAX_DUTY% 占空比
+#define DIFF_MIN            (-5000  )        //4000                                       // 最大 MAX_DUTY% 占空比
+#define DIR_L                (A2 ) //电机一
 #define PWM_L               (TIM5_PWM_CH4_A3)
 
 #define DIR_R               (A0 )
@@ -25,6 +25,7 @@ typedef struct {
 	  volatile int front;
     // 控制参数
     volatile float err;              // 当前误差
+	  volatile float front_err;
 	  volatile float last_err;
 		volatile float speed_lasterrL;
 	  volatile float speed_err;
@@ -57,4 +58,8 @@ void CascadeControl(float speed_l, float speed_r,int DesireSpeed);
 void PID_DIR(float offset);
 void PID_SPEED(float speed_l, float speed_r,int DesireSpeed);
 void PID2_SPEED(float speed, int DesireSpeed);
+void pid_single_r(float speed, int DesireSpeed);
+void pid_single_l(float speed, int DesireSpeed);
+
+
 #endif

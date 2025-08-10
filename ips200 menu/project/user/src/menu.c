@@ -20,7 +20,7 @@ void flash_read_speed();
 int16 page=1,arrow=0;//控制菜单的俩变量
 int16 page_last;//
 int count=0;
-int i=0;
+int i=79;
 
 typedef struct
 	{
@@ -706,7 +706,7 @@ void show_test()
 		if(gpio_get_level(key_return)== 0)
     {   
 			
-        my_order.go=1;
+        i-=10;
 			  delay_ms(200);
         lcd_clear();
     }
@@ -789,12 +789,16 @@ void island_show()//22
     }
 	 if(gpio_get_level(key_return)== 0)
     {   
-			my_island.state1_count=0;
-         my_order.go=1;
-						  my_order.show=0;
-
-			  delay_ms(200);
-        lcd_clear();
+					   menu_load();
+			   my_order.encorder_time=0;  // ???????
+        my_order.count_2s=0;       // 2??????
+			 my_order.count_1s=0;
+        my_order.go=1;             // ????
+        my_order.show=0;           // ??????
+			my_order.zebra=0;
+      //  my_menu.menu_open=0;       // ????
+        delay_ms(200);             // ????
+        lcd_clear();               // ????
     }
 
 

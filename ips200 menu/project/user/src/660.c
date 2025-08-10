@@ -7,18 +7,80 @@
 #include "isr.h"
 pdd my_pdd=
 {
-	.AD_DIRE=0.8,
-	.D_DIRE=-0.5,
-	.P_DIRE=-160    ,
+	.AD_DIRE=0.7, //+
+	.D_DIRE=-1.5,   //-
+	.P_DIRE=-170    ,//130  -190
 	.steer_output=0,
 	.open=1
 };
+// 150  0.8(ad) -1.5(d) -190(p)  29(fro)  40(p_spe) 1.5(d_spe)   1.5倍
 #define FLASH_SECTION_INDEX       (127)                                         // 存储数据用的扇区 倒数第一个扇区
 #define FLASH_PAGE_INDEX          (3)                                           // 存储数据用的页码 倒数第一个页码
 // PDD???????
 int16 sub_page = 1;       // ?????
 int16 sub_arrow = 0;      // ???????
 int16 sub_page_last;      // ??????
+// 1. P_SPEED调整页面（步长±1）
+void p_speed_adjust()
+{
+    lcd_showstr(0, 0, "Adjust P_SPEED");
+    lcd_showstr(0, 30, "Value:");
+    lcd_showfloat(80, 30, my_control.P_SPEED, 5, 1);  // 显示P_SPEED（保留1位小数）
+    lcd_showstr(0, 60, "Up:+1  Down:-1");
+    lcd_showstr(0, 80, "Return:Menu");
+    
+    if(gpio_get_level(key_up) == 0)
+    {
+        my_control.P_SPEED += 10;  // 步长+1
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_down) == 0)
+    {
+        my_control.P_SPEED -= 10;  // 步长-1
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_return) == 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        sub_page = 1;  // 返回菜单主页面
+    }
+}
+
+// 2. I_SPEED调整页面（步长±0.1）
+void i_speed_adjust()
+{
+    lcd_showstr(0, 0, "Adjust I_SPEED");
+    lcd_showstr(0, 30, "Value:");
+    lcd_showfloat(80, 30, my_control.I_SPEED, 5, 3);  // 显示I_SPEED（保留3位小数）
+    lcd_showstr(0, 60, "Up:+0.1  Down:-0.1");
+    lcd_showstr(0, 80, "Return:Menu");
+    
+    if(gpio_get_level(key_up) == 0)
+    {
+        my_control.I_SPEED += 0.5;  // 步长+0.1
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_down) == 0)
+    {
+        my_control.I_SPEED -= 0.5;  // 步长-0.1
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_return) == 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        sub_page = 1;  // 返回菜单主页面
+    }
+}
 /**
  * @brief  保存菜单中的PDD参数到Flash
  * 只存储：AD_DIRE、D_DIRE、P_DIRE（my_pdd）和front（my_control）
@@ -41,7 +103,8 @@ void menu_save(void)
     flash_union_buffer[2].float_type  = my_pdd.P_DIRE;
     // 索引3：front（int16类型，使用int16_type成员）
     flash_union_buffer[3].int16_type  = my_control.front;
-
+    flash_union_buffer[4].float_type  = my_control.P_SPEED;  // 保存P_SPEED
+    flash_union_buffer[5].float_type  = my_control.I_SPEED;  // 保存I_SPEED
     // 写入Flash（只保存菜单相关参数）
     flash_write_page_from_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);
 }
@@ -80,24 +143,33 @@ void menu_load(void)
     my_pdd.P_DIRE = flash_union_buffer[2].float_type;
     // 索引3：恢复front（int16类型）
     my_control.front = flash_union_buffer[3].int16_type;
-
+    my_control.P_SPEED = flash_union_buffer[4].float_type;  // 加载P_SPEED
+    my_control.I_SPEED = flash_union_buffer[5].float_type;  // 加载I_SPEED
     flash_buffer_clear(); // 清空缓冲区，避免残留数据
 }
 void Camera_pdd_show()
-{
-    ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
-
+{    
+		if(my_order.show==1)
+		{
+				ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
+				draw_mid_line();
+						// 绘制赛道边界线（宽线版本）
+				draw_boundary_lines_wide();
+		}
     lcd_showstr(0,110,"P_DIRE");
     lcd_showfloat(100,110, my_pdd.P_DIRE, 5, 3);
     
     lcd_showstr(0,130,"AD_DIRE");
     lcd_showfloat(100,130, my_pdd.AD_DIRE, 5, 3);
     
-    lcd_showstr(0,150,"D_DIRE");
-    lcd_showfloat(100,150, my_pdd.D_DIRE, 5, 3);
-    
-    lcd_showstr(0,170,"steer_out");
-    lcd_showfloat(100,170, my_pdd.steer_output, 5, 3);
+//    lcd_showstr(0,150,"D_DIRE");
+//    lcd_showfloat(100,150, my_pdd.D_DIRE, 5, 3);
+     lcd_showstr(0,150,"right");
+    lcd_showfloat(100,150, my_image.Right_Up_Find, 5, 3);
+//    lcd_showstr(0,170,"steer_out");
+//    lcd_showfloat(100,170, my_pdd.steer_output, 5, 3);
+        lcd_showstr(0,170,"left");
+    lcd_showfloat(100,170, my_image.Left_Up_Find, 5, 3);
 
 	  lcd_showstr(0,190,"ERR");
     lcd_showint(100,190, my_control.err , 5);
@@ -106,10 +178,22 @@ void Camera_pdd_show()
     lcd_showint(100,210,imu660ra_gyro_x , 5);
     
 		lcd_showstr(0,230,"set_speed");  // ??????
-    lcd_showint(100,230, my_control.Speed_Left_Set , 5);
+    lcd_showint(100,230, my_control.Speed_Right_Set , 5);
 		
 		lcd_showstr(0,250,"front");  // ??????
     lcd_showint(100,250, my_control.front  , 5);
+		 
+		lcd_showstr(0,270,"stop");  // ??????
+    lcd_showint(100,270, my_image.Search_Stop_Line  , 5);
+		
+				lcd_showstr(0, 290, "zebra");
+    lcd_showint(100, 290       , my_order.zebra  , 5);
+     // 新增显示P_SPEED和I_SPEED
+//    lcd_showstr(0,290,"P_SPEED");  // 新增行（根据屏幕尺寸调整位置）
+//    lcd_showfloat(100,290, my_control.P_SPEED, 5, 1);
+//    lcd_showstr(0,310,"I_SPEED");
+//    lcd_showfloat(100,310, my_control.I_SPEED, 5, 3);
+
     if(gpio_get_level(key_up)== 0)
     {
       //  my_pdd.AD_DIRE += 0.1;
@@ -124,11 +208,13 @@ void Camera_pdd_show()
 //        my_pdd.AD_DIRE -= 1;
 //        delay_ms(200);
 //        lcd_clear();
-			 menu_load();
+			   menu_load();
 			   my_order.encorder_time=0;  // ???????
         my_order.count_2s=0;       // 2??????
+			 my_order.count_1s=0;
         my_order.go=1;             // ????
         my_order.show=0;           // ??????
+			my_order.zebra=0;
       //  my_menu.menu_open=0;       // ????
         delay_ms(200);             // ????
         lcd_clear();               // ????
@@ -153,7 +239,6 @@ void Camera_pdd_show()
         lcd_clear();
     }
 }
-// PDD submenu key handling
 void sub_key_action()
 {
     if(gpio_get_level(key_up) == 0)
@@ -169,20 +254,18 @@ void sub_key_action()
         sub_arrow += 20;
     }
     
-    // 主页面共6个选项（0~120，步长20），箭头循环范围调整
+    // 新增选项后，箭头范围调整为0~160（共9个选项，步长20）
     switch(sub_page)
     {
         case 1:  
-            if(sub_arrow < 0) sub_arrow = 120;   // 向上循环到最后一个选项
-            else if(sub_arrow > 120) sub_arrow = 0; // 向下循环到第一个选项
+            if(sub_arrow < 0) sub_arrow = 160;    // 向上循环到最后一个选项（Back）
+            else if(sub_arrow > 160) sub_arrow = 0; // 向下循环到第一个选项
             break;
         default:  
-            sub_arrow = 0; // 调节页面无需箭头移动
+            sub_arrow = 0;
             break;
     }
 }
-
-// PDD submenu main page
 void pdd_sub_menu_main_page()
 {
     sub_page_last = sub_page;
@@ -194,7 +277,7 @@ void pdd_sub_menu_main_page()
     
     sub_key_action();
     
-    // 显示菜单选项（明确对应存储的参数）
+    // 显示菜单选项（新增P_SPEED和I_SPEED选项）
     lcd_showstr(0, sub_arrow, "->");
     lcd_showstr(20, 0, "AD_DIRE");
     lcd_showfloat(120, 0, my_pdd.AD_DIRE, 5, 3);
@@ -204,41 +287,52 @@ void pdd_sub_menu_main_page()
     lcd_showfloat(120, 40, my_pdd.P_DIRE, 5, 3);
     lcd_showstr(20, 60, "front");
     lcd_showint(120, 60, my_control.front, 5);
-    lcd_showstr(20, 80, "Save Params");  // 保存当前菜单参数
-    lcd_showstr(20, 100, "Load Params"); // 加载之前保存的参数
-    lcd_showstr(20, 120, "Back");        // 返回上级
-    
-    // 回车键逻辑（针对菜单参数的保存/加载）
+    // 新增选项：P_SPEED（位置80）、I_SPEED（位置100）
+    lcd_showstr(20, 80, "P_SPEED");
+    lcd_showfloat(120, 80, my_control.P_SPEED, 5, 1);  // 显示P_SPEED
+    lcd_showstr(20, 100, "I_SPEED");
+    lcd_showfloat(120, 100, my_control.I_SPEED, 5, 3); // 显示I_SPEED
+    // 原有选项后移（保持Save/Load/Back）
+    lcd_showstr(20, 120, "Save Params");
+    lcd_showstr(20, 140, "Load Params");
+    lcd_showstr(20, 160, "Back");
+//		lcd_showstr(20, 180, "front_err");
+//    lcd_showint(120,180       , my_control.front_err  , 5);
+    		lcd_showstr(20, 180, "zebra");
+    lcd_showint(120,180       , my_order.zebra  , 5);
+
+    // 回车键逻辑（新增P_SPEED和I_SPEED的调整入口）
     if(gpio_get_level(key_enter) == 0)
     {
         delay_ms(300);
         lcd_clear();
         switch(sub_arrow + 20)
         {
-            case 20:  sub_page = 2; break;   // 调节AD_DIRE
-            case 40:  sub_page = 3; break;   // 调节D_DIRE
-            case 60:  sub_page = 4; break;   // 调节P_DIRE
-            case 80:  sub_page = 5; break;   // 调节front
-            case 100:                        // 保存参数
+            case 20:  sub_page = 2; break;   // AD_DIRE
+            case 40:  sub_page = 3; break;   // D_DIRE
+            case 60:  sub_page = 4; break;   // P_DIRE
+            case 80:  sub_page = 5; break;   // front
+            case 100: sub_page = 6; break;   // 新增：P_SPEED调整
+            case 120: sub_page = 7; break;   // 新增：I_SPEED调整
+            case 140:                        // Save
                 menu_save();
-                lcd_showstr(50, 80, "Params Saved!"); // 明确提示保存的是菜单参数
+                lcd_showstr(50, 80, "Params Saved!");
                 delay_ms(1000);
                 lcd_clear();
                 sub_page = 1;
                 break;
-            case 120:                        // 加载参数
+            case 160:                        // Load
                 menu_load();
                 lcd_showstr(50, 80, "Params Loaded!");
                 delay_ms(1000);
                 lcd_clear();
                 sub_page = 1;
                 break;
-            case 140: sub_page = 0; break;   // 返回上级
+            case 180: sub_page = 0; break;   // Back
         }
         sub_arrow = 0;
     }
 }
-
 // AD_DIRE adjustment page
 void pdd_ad_dire_adjust()
 {
@@ -284,14 +378,14 @@ void pdd_d_dire_adjust()
     
     if(gpio_get_level(key_up) == 0)
     {
-        my_pdd.D_DIRE += 0.1;
+        my_pdd.D_DIRE += 0.5;
         delay_ms(200);
         lcd_clear();
     }
     
     if(gpio_get_level(key_down) == 0)
     {
-        my_pdd.D_DIRE -= 0.1;
+        my_pdd.D_DIRE -= 0.5   ;
         delay_ms(200);
         lcd_clear();
     }
@@ -315,14 +409,14 @@ void pdd_p_dire_adjust()
     
     if(gpio_get_level(key_up) == 0)
     {
-        my_pdd.P_DIRE += 10;
+        my_pdd.P_DIRE += 5;
         delay_ms(200);
         lcd_clear();
     }
     
     if(gpio_get_level(key_down) == 0)
     {
-        my_pdd.P_DIRE -= 10;
+        my_pdd.P_DIRE -= 5;
         delay_ms(200);
         lcd_clear();
     }
@@ -340,12 +434,13 @@ void front_adjust()
 {
     lcd_showstr(0, 0, "Adjust front");
     lcd_showstr(0, 30, "Value:");
-    lcd_showint(80, 30, my_control.front, 5);
+    lcd_showint(80, 30,my_control.front, 5);
     lcd_showstr(0, 60, "Up:+  Down:-");
     lcd_showstr(0, 80, "Return:Menu");
     
     if(gpio_get_level(key_up) == 0)
     {
+			//  my_order.add+=1;
         my_control.front += 1;
         delay_ms(200);
         lcd_clear();
@@ -354,6 +449,7 @@ void front_adjust()
     if(gpio_get_level(key_down) == 0)
     {
         my_control.front -= 1;
+		// my_order.add-=1;
         delay_ms(200);
         lcd_clear();
     }
@@ -366,33 +462,32 @@ void front_adjust()
     }
 }
 
-// PDD submenu main function, similar to menu_main
 void pdd_sub_menu_main()
 {
-    // Only process when submenu is active
     if(my_pdd.open==1)
-		{
-		   menu_load();
-			 my_pdd.open++;
-		}
-		
-		
+    {
+        menu_load();
+        my_pdd.open++;
+    }
+    
     if(sub_page != 0)
     {
         switch(sub_page)
         {
-            case 1: pdd_sub_menu_main_page(); break;  // Main submenu page
-            case 2: pdd_ad_dire_adjust(); break;      // AD_DIRE adjustment
-            case 3: pdd_d_dire_adjust(); break;       // D_DIRE adjustment
-            case 4: pdd_p_dire_adjust(); break;       // P_DIRE adjustment
-            case 5: front_adjust(); break;            // front adjustment
-				   	case 6:  Camera_pdd_show();break;            // front adjustment
+              case 1: pdd_sub_menu_main_page(); break;
+            case 2: pdd_ad_dire_adjust(); break;
+            case 3: pdd_d_dire_adjust(); break;
+            case 4: pdd_p_dire_adjust(); break;
+            case 5: front_adjust(); break;
+            case 6: p_speed_adjust(); break;   // 新增：P_SPEED调整页面
+            case 7: i_speed_adjust(); break;   // 新增：I_SPEED调整页面
+            case 8: Camera_pdd_show();break;   // 保持原有Camera页面（若需要）
         }
     }
-		else
-		{
-		      Camera_pdd_show();
-		}
+    else
+    {
+        Camera_pdd_show();
+    }
 }
 
 // Function to start PDD submenu

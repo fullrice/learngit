@@ -9,6 +9,7 @@ typedef struct {
 	volatile int island; 	
 	volatile int time;
 	volatile int count_2s;
+		volatile int count_1s;
 	volatile int count;
 	volatile int beep_count;
 	volatile int black; 
@@ -46,5 +47,7 @@ void Continuity_Change_Left(int start,int end);//连续性阈值设置为5
 void K_Draw_Line(float k, int startX, int startY,int endY);
 void Draw_Line(int startX, int startY, int endX, int endY);
 void beep_on();
+int black_stop();
+void zebra();
 void xieji(int begin, int end, int y_begin, int y_end);
 #endif

@@ -39,6 +39,7 @@
 #include "menu.h"
 #include "image.h"
 #include "control.h"
+#include <math.h>
 extern float speed_mps1;
 extern float speed_mps2;   
 extern int count_2s;
@@ -69,11 +70,27 @@ void TIM2_IRQHandler (void)
 
 //	   	PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
 //    //   PID_DIR(2.2);	
-      PDD_location(1);
+       //   PDD_location(1);
+		  //   PID2_SPEED((my_control.encoderl+my_control.encoderr)/2,my_control.Speed_Right_Set);
+//    //   PID_DIR(2.2);	
+//    //  PDD_location(1);
+//		Motor_Left(my_control.pwm_l-my_pdd.steer_output);
+//		Motor_Right(my_control.pwm_r+my_pdd.steer_output);
+	 my_control.encoderl=encoder_get_count(TIM3_ENCODER);
+	   encoder_clear_count(TIM3_ENCODER);
+	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
+	   encoder_clear_count(TIM4_ENCODER);
+	//      PID2_SPEED((my_control.encoderl+my_control.encoderr)/2,my_control.Speed_Right_Set);
+//    //   PID_DIR(2.2);	
+         PDD_location(1);
+//			Motor_Left(1000);//电机一
+//     	Motor_Right(1000);
+
 //    	Motor_Left(my_control.pwm_l-my_pdd.steer_output);
 //     	Motor_Right(my_control.pwm_r+my_pdd.steer_output);
 
-	      my_order.black=0;
+
+	    my_order.black=0;
 				 for(int i=MT9V03X_H-3;i>=3;i--)
 			{
 				 if(my_image.image_two_value[i][MT9V03X_W/2]==0)
@@ -95,144 +112,59 @@ void TIM2_IRQHandler (void)
 		//Zebra_Detect();		
 	 //蜂鸣器
 		//	PDD_location(1);
-	if(my_order.go!=0 && my_order.zebra<100  )//没看到斑马线并且发车     
-	{
-//    速度决策（直道）
-//		 if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-//		 {
-//		    my_control.Speed_Right_Set=300;	 
-//		 }
-//		 else
-//		 {
-//		    my_control.Speed_Right_Set=320;	 
-////		 }
-//		  if((my_control.err<=2 || my_control.err>=-2) && my_image.Search_Stop_Line>=72  )//&& my_control.encoderl<=300 && my_control.encoderr<=300) //直道
-//		 {
-////			    my_control.max_encoderl = (my_control.max_encoderl < my_control.encoderl) ? my_control.encoderl : my_control.max_encoderl;
-////		      my_control.max_encoderr = (my_control.max_encoderr < my_control.encoderr) ? my_control.encoderr : my_control.max_encoderr;
+			zebra();
+			if(my_order.zebra == 3)
+			{
+			    my_order.go=0;
+			}
+					if (my_order.go != 0 ) // 没看到斑马线并且发车
+					{
+							// 直道条件判断
+							if ((my_control.err <= 8 || my_control.err >= -8) && 
+									my_abs(my_control.front_err)<5     && 
+									my_image.Left_Lost_Counter <= 20 && 
+									my_image.Right_Lost_Counter <= 20 && my_image.Search_Stop_Line>=75) 
+							{
+									// 重置弯道计时器（确保状态切换时重新计时）
+//									my_order.count_1s = 0;
+//									
+//									// 非阻塞直道计时（2000ms缓冲）
+//									if (my_order.count_2s < 2000) {
+//											my_order.count_2s++; // 递增计时器
+//									} else {
+											// 缓冲结束后设置速度
+					//						my_control.Speed_Right_Set = my_control.Speed_Left_Set;
+											my_control.Speed_Right_Set = my_control.Speed_Left_Set*1.5    ;
 
-////my_control.P_DIRE=my_order.add;   
-////			  my_control.P_SPEED=9.7 ;  
-//		//	  my_control.Speed_Right_Set=170;
-//			 my_control.Speed_Right_Set=my_control.Speed_Left_Set;
-////			 my_control.right_offset=1;
-////			 my_control.left_offset=1;
-//		//	 my_control.front=30  ;
-////			  my_control.I_SPEED=0.003  ;
-//		//	  my_control.D_DIRE=-1;
-//		 }
-//		 else  
-//		 {
-//		 //   my_control.P_DIRE=my_order.add-2    ;//-3
-//		//	  my_control.Speed_Right_Set=150;  
-////			 if(my_control.err>0)//zuo
-////			 {
-////			 //   my_control.left_offset=1.2;
-////			    my_control.right_offset=1.2;
-////			 }
-////			 else
-////			 {
-////			    my_control.left_offset=1.2;
-////			   // my_control.right_offset=1.2;
-////			 
-////			 }
-//			  my_control.Speed_Right_Set=my_control.Speed_Left_Set;
-//    //     			 my_control.front=36      ;
+//									}
+							} 
+							else // 弯道条件
+							{
+									// 重置直道计时器（确保状态切换时重新计时）
+//									my_order.count_2s = 0;
+//									
+//									// 非阻塞弯道计时（500ms缓冲）
+//									if (my_order.count_1s < 500) {
+//											my_order.count_1s++; // 递增计时器
+//									} else {
+											// 缓冲结束后设置速度
+//											my_control.Speed_Right_Set = my_control.Speed_Left_Set - (80 - my_image.Search_Stop_Line) * 2.5;
+											my_control.Speed_Right_Set = my_control.Speed_Left_Set    ;
+//									}
+							}
 
-//		//	  my_control.P_SPEED=9.39;
-//		//	 	my_control.I_SPEED=0.002  ;
-//      //  my_control.D_DIRE=-1;
-//		 }//-33 170 150   -33 150 120  -28 150 130
-//		 if(my_order.go == 2 )//正常阶段
-//		 {
-//		    my_control.P_SPEED=12.39;
-//			  my_control.I_SPEED=0.003;		
-//        my_control.Speed_Right_Set=my_control.Speed_Left_Set-10;			 
-//		 }
-//		 else if(my_order.go == 1)//发车阶段
-//		 {
-//		    my_control.P_SPEED=14.39;
-//			 my_control.I_SPEED=0.003;
-//			my_control.Speed_Right_Set=my_control.Speed_Left_Set;			 
-//		 }
-//		if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-//		{
-//		
-//		//   my_control.Speed_Right_Set=320;
-//					if(my_order.encorder_time<=1000 && my_order.encorder_time>=0)
-//				{
-//					 my_control.Speed_Right_Set=430;		
-//				}
-//				else
-//				{
-//					my_control.Speed_Right_Set=my_control.Speed_Left_Set;
-//					my_control.P_DIRE=-36;
-//					//my_control.P_DIRE=my_order.add+3;//直道
-//				}
-//		 //  my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
-//		//	my_control.front=42 ;
-//		}
-//		else if(my_control.err<=2 || my_control.err>=-2 && my_island.island_state == 0)
-//		{
-//		
-//		   my_control.Speed_Right_Set=300;
-//		 
-//		}
-//		else if(my_control.err<=5 || my_control.err>=-5 && my_island.island_state == 0)
-//		{
-//		  my_control.Speed_Right_Set=270;
-//			my_control.P_DIRE=-38;
-//      //my_control.P_DIRE=my_order.add+1;
-//		
-//		}
-//		else
-//		{
-//			
-//		  my_control.Speed_Right_Set=270  ;//250
-//			my_control.P_DIRE=-40;
-//	//		my_control.P_DIRE=my_order.add-1;
-//	//		 my_control.Speed_Right_Set=my_control.Speed_Right_Set-(MT9V03X_H-my_image.Search_Stop_Line);
-//		//  my_control.D_DIRE=-0.1;
-//		}
-//		if(my_order.encorder_time<=4000 && my_order.encorder_time>=0)
-//		{
-//		   my_control.Speed_Right_Set=440;		
-//		}
-//     速度决策
-//     my_control.Speed_Right_Set=Speed_Right_Set-(MT9V03X_H-Search_Stop_Line)*   ;//
-//     正常方向环和速度环
-  //实际速度限幅
-//	if(my_control.encoderl>=310 || my_control.encoderr >=310)
-//	{
-//	   my_control.P_DIRE=my_order.add-3;
-//	}
-//	else
-//	{
-//	    my_control.P_DIRE=my_order.add;
-//	}
-//		 my_control.max_encoderl = (my_control.max_encoderl < my_control.encoderl) ? my_control.encoderl : my_control.max_encoderl;
-//		 my_control.max_encoderr = (my_control.max_encoderr < my_control.encoderr) ? my_control.encoderr : my_control.max_encoderr;
-
-//   	PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
-//    PID_DIR(2.2);	
-//	  Motor_Left(my_control.pwm_l-my_control.steer_output);
-//   	Motor_Right(my_control.pwm_r+my_control.steer_output);
-      PID2_SPEED((my_control.encoderl/50+my_control.encoderr/50)/2,my_control.Speed_Right_Set);
-    //   PID_DIR(2.2);	
-      PDD_location(1);
-    	Motor_Left(my_control.pwm_l-my_pdd.steer_output);
-     	Motor_Right(my_control.pwm_r+my_pdd.steer_output);
-
-//	  Motor_Left(1000);
-//    Motor_Right(1000); 
-
-  }
-	else
-	{
-     Motor_Right(0);
-	   Motor_Left(0);
-	}
-	
+							// 公共控制逻辑（直道/弯道共用）
+						  	PID2_SPEED((my_control.encoderl + my_control.encoderr)/2, my_control.Speed_Right_Set);
+					//		pid_single_r(my_control.encoderr, my_control.Speed_Right_Set);
+					//		pid_single_l(my_control.encoderl, my_control.Speed_Right_Set);
+							Motor_Left(my_control.pwm_l - my_pdd.steer_output);
+							Motor_Right(my_control.pwm_r + my_pdd.steer_output);
+					} 
+					else // 停车条件
+					{
+							Motor_Right(0);
+							Motor_Left(0);
+					}	
 
     // 此处编写用户代码
     TIM2->SR &= ~TIM2->SR;                                                      // 清空中断状态
@@ -282,11 +214,13 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
 //     开始的加速
-     my_order.count_2s++;
-	   if(my_order.count_2s>=100 && my_order.go==1)
-		 {
-		    my_order.go=2;		 
-		 }
+ //    my_order.count_2s++;
+//	   if(my_order.count_2s>=100 && my_order.go==1)
+//		 {
+//		    my_order.go=2;		 
+//		 }
+				 imu660ra_get_gyro(); 
+
 //	   if(my_order.count_2s>=0 && my_order.count_2s<=50)//1s
 //					{
 //					   my_control.Speed_Right_Set=450;
@@ -298,11 +232,11 @@ void TIM6_IRQHandler (void)
 //					}
 //    编码器的读取
 //		 my_order.encorder_time+=my_control.encoderl;
-     my_control.encoderl=encoder_get_count(TIM3_ENCODER);
-	   encoder_clear_count(TIM3_ENCODER);
-	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
-	   encoder_clear_count(TIM4_ENCODER);
-		 imu660ra_get_gyro(); 
+//     my_control.encoderl=encoder_get_count(TIM3_ENCODER);
+//	   encoder_clear_count(TIM3_ENCODER);
+//	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
+//	   encoder_clear_count(TIM4_ENCODER);
+//		 imu660ra_get_gyro(); 
 //	  Motor_Left(1000);
   //  Motor_Right(1000); 
 
@@ -399,6 +333,7 @@ void TIM7_IRQHandler (void)
 				
 //			标志的检测位
 				// Zebra_Detect();
+	      // zebra(); 
         if(my_island.open==1)
 				{
 				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);

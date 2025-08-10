@@ -102,23 +102,23 @@ int Weight[80] = {
 //        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
 //        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,  
 //        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//        6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
-//        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v      
+  //        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v      
 //        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重v             //图像最远端60 ——69 行权重
 //};
 control my_control = {
     .Base_Speed = 0,
-    .Speed_Left_Set = 170 ,  //250
-    .Speed_Right_Set = 170,
+    .Speed_Left_Set = 150 ,  //250
+    .Speed_Right_Set = 150,
     .Straight_Speed = 0,
     .err = 0.0f,//左正右负，并且保证向左转的时候左轮小于右轮，那么
+	  .front_err=0.0f,
     .last_err = 0.0f,
     .speed_lasterrL =0,
     .speed_lasterrR = 0.0f,
     .P_DIRE = -30              ,//-13 -25 -38  -36  -39  尽量偏左  调高并且换位置 -29 -30   -36   -39 （340）-45（360）  -32(260 260)
     .D_DIRE = 0         , //-0.2  -0.3  -0.2 微调
-    .P_SPEED=14.39  , //5.69    5.99(0.002)  6.39 10.39  12.39
-    .I_SPEED =0.004        , //0.1   0.001  5.69（0.0015）0.003
+    .P_SPEED=50 , //5.69    5.99(0.002)  6.39 10.39  12.39 14.39
+    .I_SPEED =2          , //0.1   0.001  5.69（0.0015）0.003 0.004
 	  .pwm_l=0.0f   ,
 	  .Shift_Ratio=0.0f,
 	  .pwm_r=0.0f,
@@ -126,7 +126,8 @@ control my_control = {
 	  .encoderr=0,//1400
     .steer_output=0,
 	  .speed_err=0,
-	  .front=22        ,
+	  .front
+	=27        ,
 	  .max_encoderr=0,
 		.max_encoderl=0,
 		.right_offset=0,
@@ -142,20 +143,21 @@ control my_control = {
 -------------------------------------------------------------------------------------------------------------------*/
 void Motor_Right(int pwm_R)
 {
-    if(pwm_R>=SPEED_MAX)//限幅处理
-        pwm_R=SPEED_MAX;
-    else if(pwm_R<=SPEED_MIN)
-        pwm_R=SPEED_MIN;
+    if(pwm_R>=10000)//限幅处理
+        pwm_R=10000;
+    else if(pwm_R<=-10000)
+        pwm_R=-10000;
     if(pwm_R<=0)
    {
-		     // gpio_set_level(DIR_L, GPIO_LOW);  //凡
-              gpio_set_level(DIR_R, GPIO_HIGH);                                      // DIR输出高电平
+		    //  gpio_set_level(DIR_L, GPIO_LOW);  //凡
+        //      gpio_set_level(DIR_R, GPIO_HIGH);                                      // DIR输出高电平
+		       gpio_set_level(DIR_R,GPIO_LOW);    
             pwm_set_duty(PWM_R, -pwm_R );                   // 计算占空比
    }
   else
    {
-         // gpio_set_level(DIR_R, GPIO_HIGH);   //凡
-		       gpio_set_level(DIR_R, GPIO_LOW);                                   // DIR输出低电平
+          gpio_set_level(DIR_R, GPIO_HIGH);   //凡
+		     //  gpio_set_level(DIR_R, GPIO_LOW);                                   // DIR输出低电平
             pwm_set_duty(PWM_R, pwm_R);                // 计算占空比
    }
 }
@@ -167,20 +169,20 @@ void Motor_Right(int pwm_R)
 -------------------------------------------------------------------------------------------------------------------*/
 void Motor_Left(int pwm_L)
 {
-    if(pwm_L>=SPEED_MAX)//限幅处理
-        pwm_L=SPEED_MAX;
-    else if(pwm_L<=SPEED_MIN)
-        pwm_L=SPEED_MIN;
+     if(pwm_L>=10000)//限幅处理
+        pwm_L=10000;
+    else if(pwm_L<=-10000)
+        pwm_L=-10000;
     if(pwm_L>=0)
    {
-		       //  gpio_set_level(DIR_L, GPIO_HIGH);    //凡                               // DIR输出高电平
-             gpio_set_level(DIR_L, GPIO_LOW);                                  // DIR输出高电平
+		         gpio_set_level(DIR_L, GPIO_HIGH);    //凡                               // DIR输出高电平
+           //  gpio_set_level(DIR_L, GPIO_LOW);                                  // DIR输出高电平
             pwm_set_duty(PWM_L, pwm_L );                   // 计算占空比  映射
    }
   else
    {
-		//  gpio_set_level(DIR_L, GPIO_LOW);  //凡
-		 gpio_set_level(DIR_L, GPIO_HIGH);  
+		  gpio_set_level(DIR_L, GPIO_LOW);  //凡
+		// gpio_set_level(DIR_L, GPIO_HIGH);  
                                         // DIR输出低电平
             pwm_set_duty(PWM_L, -pwm_L);                // 计算占空比
    }
@@ -230,9 +232,18 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 			if(my_island.island_state==0 || my_island.island_state==4 || my_island.island_state==6)
 		{
 			//双边
+			  float k_err=0;
 				for(int i=start_point;i<end_point;i++)
-				{
-						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])/2));//位操作等效除以2 1.9  
+				{   
+//					if(my_image.Left_Line[i] < my_image.left_stable_range[1] || my_image.Left_Line[i] > my_image.left_stable_range[0] ||
+//						 my_image.Right_Line[i] < my_image.right_stable_range[1] || my_image.Right_Line[i] > my_image.right_stable_range[0])
+//					{							 
+//							k_err=1.3;
+//					} else 
+//					{
+//							k_err=1;
+//					}
+						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])/2  ));//位操作等效除以2 1.9  
 				}
 		}
 		else if(my_island.island_state==1 || my_island.island_state==2 )
@@ -241,20 +252,20 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 
 						for(int i=start_point;i<end_point;i++)
 						{
-//							err+=(MT9V03X_W/1.8-Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  
-                err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+							err+=(MT9V03X_W/1.8-Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  
+           //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
 						}
 	   }
 		else if(my_island.island_state==3 || my_island.island_state==5)
 		{
 		   for(int i=start_point;i<end_point;i++)
 						{
-								//err += ( (MT9V03X_W/1.8 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
-				    err += ( my_image.Left_Line[i] - (MT9V03X_W/2 - Standard_Road_Wide[i]/2) );
+								err += ( (MT9V03X_W/1.8 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+				 //   err += ( my_image.Left_Line[i] - (MT9V03X_W/2 - Standard_Road_Wide[i]/2) );
 						}	
 		}
-			
-			
+		
+    my_control.front_err=(MT9V03X_W/2-((my_image.Left_Line[3]+my_image.Right_Line[3])/2));		
     err=err/(end_point-start_point);
     return err;
 }
@@ -724,6 +735,59 @@ void PID2_SPEED(float speed, int DesireSpeed) {
     // 保存历史误差（用于下一次计算）
     my_control.speed_lasterrL = err;
     my_control.speed_lasterrR = err;
+}
+void pid_single_l(float speed, int DesireSpeed)
+{
+     float target_speed = DesireSpeed;
+
+   float err=target_speed - speed;
+
+    // 增量式 PID 计算（左轮）
+    float delta_pwm = 
+        my_control.P_SPEED * (err - my_control.speed_lasterrL) +  // P 项
+        my_control.I_SPEED * err;                                 // I 项
+                              // I 项
+
+    // 更新 PWM 输出（左轮）
+    my_control.pwm_l += (int)delta_pwm;
+		if (my_control.pwm_l > SPEED_MAX) my_control.pwm_l = SPEED_MAX;
+    if (my_control.pwm_l < SPEED_MIN) my_control.pwm_l = SPEED_MIN;
+    // 更新 PWM 输出（右轮）
+
+
+
+    // 保存历史误差（用于下一次计算）
+    my_control.speed_lasterrL = err;
+    my_control.speed_lasterrR = err;
+
+
+}
+void pid_single_r(float speed, int DesireSpeed)
+{
+     float target_speed = DesireSpeed;
+
+   float err=target_speed - speed;
+
+    // 增量式 PID 计算（左轮）
+    float delta_pwm = 
+        my_control.P_SPEED * (err - my_control.speed_lasterrL) +  // P 项
+        my_control.I_SPEED * err;                                 // I 项
+                              // I 项
+
+     my_control.pwm_r += (int)delta_pwm;
+  // 右轮PWM限幅
+    if (my_control.pwm_r > SPEED_MAX) my_control.pwm_r = SPEED_MAX;
+    if (my_control.pwm_r < SPEED_MIN) my_control.pwm_r = SPEED_MIN;
+   
+    // 更新 PWM 输出（右轮）
+
+
+
+    // 保存历史误差（用于下一次计算）
+    my_control.speed_lasterrL = err;
+    my_control.speed_lasterrR = err;
+
+
 }
 float my_abs(float x) {
     return (x < 0) ? -x : x;

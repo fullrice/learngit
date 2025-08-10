@@ -35,6 +35,8 @@ typedef struct
     // 结构类变量
     int Longest_White_Column_Left[2];  // 左最长白列：[0]=长度, [1]=列号
     int Longest_White_Column_Right[2]; // 右最长白列：[0]=长度, [1]=列号
+		int left_stable_range[2];          //0是正，1是负
+	  int right_stable_range[2];          //0是正，1是负
     int Left_Lost_Flag[MT9V03X_H];     // 左丢线标记（1=丢线，0=正常）
     int Right_Lost_Flag[MT9V03X_H];    // 右丢线标记（1=丢线，0=正常）
     int stepl;
@@ -63,6 +65,7 @@ extern Image my_image;
 extern int Standard_Road_Wide[MT9V03X_H];
 // 函数声明
 int My_Adapt_Threshold(uint8* image, uint16 width, uint16 height);
+//int Multi_Peak_Threshold_MT9V03X(uint8* image);
 void Image_Binarization(int threshold);
 int Distributed_Otsu_Threshold(uint8 *image, uint16 width, uint16 height);
 void Image_Binarization2(uint8 (*src_image)[MT9V03X_W], uint8 (*dst_image)[MT9V03X_W], uint16 width, uint16 height, int threshold);
@@ -79,4 +82,5 @@ void Find_Up_Point(int start,int end);
 void draw_mid_line();
 void draw_boundary_lines(void);
 void draw_boundary_lines_wide(void);
+void image_filter(uint8(*bin_image)[MT9V03X_W]);
 #endif

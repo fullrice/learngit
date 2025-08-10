@@ -9,9 +9,10 @@ order my_order={
 	.cross=0,
 	.island=0,
   .count_2s=0,
+	.count_1s=0,
 	.black=0,
 	.start=0,
-	.add=-30       ,
+	.add=29       ,
 	.zebra=0,
 	.beep_count=0,
 	.count=0,
@@ -28,7 +29,7 @@ island my_island={
   .state3_count=0,
 	.state4_count=0,
 	.state5_count=0,
-	.open=0,
+	.open=1,
 	.monotonicity_change_line={0},
 	.k=0,
   .point={0}//单调点的情况
@@ -68,60 +69,27 @@ void beep_on()
 -------------------------------------------------------------------------------------------------------------------*/
 void Cross_Detect()
 {
-    int down_search_start=0;//下点搜索开始行
-    my_order.cross=0;
-    if(my_order.island==0)//与环岛互斥开
-    {
-       // my_image.Left_Up_Find=0;
-     //   my_image.Right_Up_Find=0;
-        if(my_image.Both_Lost_Counter>=10)//十字必定有双边丢线，在有双边丢线的情况下再开始找角点
-        {
-            Find_Up_Point( MT9V03X_H-1, 0 );
-            if(my_image.cross_count<2)//只要没有同时找到两个点，直接结束
-            {
-                return;
-            }
-        }
-        if(my_image.Left_Up_Find!=0&&my_image.Right_Up_Find!=0)//找到两个上点，就找到十字了
-        {
-            my_order.cross=1;//对应标志位，便于各元素互斥掉
-            down_search_start=my_image.Left_Up_Find>my_image.Right_Up_Find?my_image.Left_Up_Find:my_image.Right_Up_Find;//用两个上拐点坐标靠下者作为下点的搜索上限
-            Find_Down_Point(MT9V03X_H-5,down_search_start+2);//在上拐点下2行作为下点的截止行
-            
-            if(my_image.Left_Down_Find<=my_image.Left_Up_Find)
-            {
-                my_image.Left_Down_Find=0;//下点不可能比上点还靠上
-            }
-            if(my_image.Right_Down_Find<=my_image.Right_Up_Find)
-            {
-                my_image.Right_Down_Find=0;//下点不可能比上点还靠上
-            }
-            if(my_image.Left_Down_Find!=0&&my_image.Right_Down_Find!=0)
-            {//四个点都在，无脑连线，这种情况显然很少
-                Left_Add_Line (my_image.Left_Line [my_image.Left_Up_Find ],my_image.Left_Up_Find ,my_image.Left_Line [my_image.Left_Down_Find ] ,my_image.Left_Down_Find);
-                Right_Add_Line(my_image.Right_Line[my_image.Right_Up_Find],my_image.Right_Up_Find,my_image.Right_Line[my_image.Right_Down_Find],my_image.Right_Down_Find);
-            }
-            else if(my_image.Left_Down_Find==0&&my_image.Right_Down_Find!=0)//11//这里使用的都是斜率补线
-            {//三个点                                     //01
-                Lengthen_Left_Boundry(my_image.Left_Up_Find-1,MT9V03X_H-1);
-                Right_Add_Line(my_image.Right_Line[my_image.Right_Up_Find],my_image.Right_Up_Find,my_image.Right_Line[my_image.Right_Down_Find],my_image.Right_Down_Find);
-            }
-            else if(my_image.Left_Down_Find!=0&&my_image.Right_Down_Find==0)//11
-            {//三个点                                     //10
-                Left_Add_Line (my_image.Left_Line [my_image.Left_Up_Find ],my_image.Left_Up_Find ,my_image.Left_Line [my_image.Left_Down_Find ] ,my_image.Left_Down_Find);
-                Lengthen_Right_Boundry(my_image.Right_Up_Find-1,MT9V03X_H-1);
-            }
-            else if(my_image.Left_Down_Find==0&&my_image.Right_Down_Find==0)//11
-            {//就俩上点                                   //00
-                Lengthen_Left_Boundry (my_image.Left_Up_Find-1,MT9V03X_H-1);
-                Lengthen_Right_Boundry(my_image.Right_Up_Find-1,MT9V03X_H-1);
-            }
-        }
-        else
-        {
-            my_order.cross=0;
-        }
-    }
+	 //开始的时候清零
+   my_order.cross=0;
+	 my_image.Left_Up_Find=0;
+	 my_image.Right_Up_Find=0;   
+	if(my_order.island != 0)
+	{
+    if(my_image.Left_Lost_Counter>=15 && my_image.Right_Lost_Counter>=15)
+		{
+			  Find_Up_Point( MT9V03X_H-1, 0 );
+			if(my_image.Left_Up_Find!=0 || my_image.Right_Up_Find!=0) //缺线并且找到角点
+				{
+				     my_order.cross=1;
+				}
+			else
+			{
+			       my_order.cross=0;
+			}
+				
+			
+		}
+	}
     //角点相关变量，debug使用
     //ips200_showuint8(0,12,Cross_Flag);
 //    ips200_showuint8(0,13,Island_State);
@@ -143,200 +111,230 @@ void Cross_Detect()
 
 
 */
+int black_stop(){
+	uint16 i,j,count=0;
+	for(i =MT9V03X_H-1;i>MT9V03X_H-2;i--)
+  {
+      {
+      for(j = 30;j<MT9V03X_W-30;j++)
+          if((my_image.image_two_value[i][j]==0&&my_image.image_two_value[i][j+1]==255)||(my_image.image_two_value[i][j]==255&&my_image.image_two_value[i][j+1]==0))
+         count++;
+      }
+  }
+	if(count>=8)
+		return 1;
+	else
+		return 0;
+}
+void zebra()
+{
+       if(black_stop()&&my_order.zebra==0){
+					   my_order.zebra=1;
+					}
+					if(my_order.zebra==1&&black_stop()==0){
+						my_order.zebra=2;
+					}
+					if(my_order.zebra==2&&black_stop()){
+						my_order.zebra=3;
+					}
+}
 void island_detect()
 {
 	//左右，连续性
  //  Continuity_Change_Right(MT9V03X_H-1-5,10);
 //   Continuity_Change_Left(MT9V03X_H-1-5,10);
 	//右环
-//	if(my_island.island_state==0)//此时是状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点
-//	{
-//	 //  Continuity_Change_Right(MT9V03X_H-1-5,10);
-//   //  Continuity_Change_Left(MT9V03X_H-1-5,10);
-//	 //  Monotonicity_Change_Right(MT9V03X_H-1-5,10);//搜索行，可以适当调近  //找到右下拐点，算是进入状态一
-//		 if(       
-//			         my_image.continuity_change_flag_right>=20&& //右边不连续
-//		           my_image.continuity_change_flag_left<=5&&   //左边连续
-//               my_image.Right_Lost_Counter>=20&&           //右丢线多
-//               my_image.Right_Lost_Counter<=50&&           //右丢线不能太多
-//               my_image.Left_Lost_Counter<=5&&            //左丢线少
-//               my_image.Search_Stop_Line>=79&& //搜索截止行看到很远
-//               my_image.Boundry_Start_Left>=MT9V03X_H-20&&my_image.Boundry_Start_Right>=MT9V03X_H-20&& //边界起始点靠下
-//               my_image.Both_Lost_Counter<=10)  
-//            {
-//              //  Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
-////                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
-////                {
-//                    my_island.island_state=1;//进入状态一
-//									  my_island.state1_count=0;
-//									  my_order.beep_count=0;
-////                }//进入之后开始
-////                else
-////                {
-////                    my_island.island_state=0;
-////                }
-//            }
-//					}
-//						//单调点12-60
-//	   if(my_island.island_state==1)  //拐点消失
-//        {
-//					 beep_on();
-//          my_island.state1_count+=my_control.encoderl;
-//          // Monotonicity_Change_Right(70,10);//找角点
-//           my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-//        //   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-//					if(my_island.state1_count>=10000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
-//            {   
-//							 my_order.beep_count=0;
-//                my_island.island_state =2;
-//							  my_island.state2_count=0;
-//            }//5000
-//        }
-//		if(my_island.island_state==2)
-//		{
-//			   beep_on();
-//			  my_island.state2_count+=my_control.encoderl;   
-//		    // my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-//		     if(my_island.state2_count>=15000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
-//            {
-//							   my_order.beep_count=0;
-//                my_island.island_state =3;
-//							  my_island.state3_count=0;
-//            }	//130000  
-//		}
-//   	if(my_island.island_state==3)//拉环
-//		{
-//			  beep_on();
-//			  my_island.state3_count+=my_control.encoderl;   
-//					if(my_island.state3_count>=18000)
-//					{
-//						 my_order.beep_count=0;
-//					   my_island.island_state =4;
-//					   my_island.state4_count=0;
-//					
-//					}
-
-//    }	
-//   if(my_island.island_state==4)//内部
-//		{		
-//			  beep_on();
-//      	  my_island.state4_count+=my_control.encoderl;   
-//					if(my_island.state4_count>5000)
-//					{
-//					   my_island.island_state =5;
-//					   my_island.state5_count=0;
-//					
-//					}
-
-//		}
-//		 if(my_island.island_state==5)//拉环
-//		{		
-//			   beep_on();
-//      	  my_island.state5_count+=my_control.encoderl;   
-//					if(my_island.state5_count>=20000)
-//					{
-//					   my_island.island_state =6;
-//					
-//					}
-
-//		}
-		
-/////////////////////////////////////////////////////////
-	//左环
-  if(my_island.island_state==0)//此时是状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点
+	if(my_order.cross != 0)
 	{
-	 //  Continuity_Change_Right(MT9V03X_H-1-5,10);
-   //  Continuity_Change_Left(MT9V03X_H-1-5,10);
-	 //  Monotonicity_Change_Right(MT9V03X_H-1-5,10);//搜索行，可以适当调近  //找到右下拐点，算是进入状态一
-		 if(       
-			         my_image.continuity_change_flag_right<=5&& //右边不连续
-		           my_image.continuity_change_flag_left>=20&&   //左边连续
-               my_image.Left_Lost_Counter>=20&&           //右丢线多
-               my_image.Left_Lost_Counter<=50&&           //右丢线不能太多
-               my_image.Right_Lost_Counter<=5&&            //左丢线少
-               my_image.Search_Stop_Line>=79&& //搜索截止行看到很远
-               my_image.Boundry_Start_Right>=MT9V03X_H-20&&my_image.Boundry_Start_Left>=MT9V03X_H-20&& //边界起始点靠下
-               my_image.Both_Lost_Counter<=10)  
-            {
-              //  Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
-//                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
-//                {
-                    my_island.island_state=1;//进入状态一
-									  my_island.state1_count=0;
-									  my_order.beep_count=0;
-//                }//进入之后开始
-//                else
-//                {
-//                    my_island.island_state=0;
-//                }
-            }
+				if(my_island.island_state==0)//此时是状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点
+				{
+				 //  Continuity_Change_Right(MT9V03X_H-1-5,10);
+				 //  Continuity_Change_Left(MT9V03X_H-1-5,10);
+				 //  Monotonicity_Change_Right(MT9V03X_H-1-5,10);//搜索行，可以适当调近  //找到右下拐点，算是进入状态一
+					 if(       
+										 my_image.continuity_change_flag_right>=20&& //右边不连续
+										 my_image.continuity_change_flag_left<=5&&   //左边连续
+										 my_image.Right_Lost_Counter>=20&&           //右丢线多
+										 my_image.Right_Lost_Counter<=50&&           //右丢线不能太多
+										 my_image.Left_Lost_Counter<=5&&            //左丢线少
+										 my_image.Search_Stop_Line>=79&& //搜索截止行看到很远
+										 my_image.Boundry_Start_Left>=MT9V03X_H-20&&my_image.Boundry_Start_Right>=MT9V03X_H-20&& //边界起始点靠下
+										 my_image.Both_Lost_Counter<=10)  
+									{
+										//  Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+			//                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
+			//                {
+													my_island.island_state=1;//进入状态一
+													my_island.state1_count=0;
+													my_order.beep_count=0;
+			//                }//进入之后开始
+			//                else
+			//                {
+			//                    my_island.island_state=0;
+			//                }
+									}
+								}
+									//单调点12-60
+					 if(my_island.island_state==1 )  //拐点消失
+							{
+								 beep_on();
+								my_island.state1_count+=my_control.encoderl;
+								// Monotonicity_Change_Right(70,10);//找角点
+								 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+							//   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+								if(my_island.state1_count>=10000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
+									{   
+										 my_order.beep_count=0;
+											my_island.island_state =2;
+											my_island.state2_count=0;
+									}//5000
+							}
+					if(my_island.island_state==2)
+					{
+							 beep_on();
+							my_island.state2_count+=my_control.encoderl;   
+							// my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+							 if(my_island.state2_count>=15000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
+									{
+											 my_order.beep_count=0;
+											my_island.island_state =3;
+											my_island.state3_count=0;
+									}	//130000  
 					}
-						//单调点12-60
-	   if(my_island.island_state==1)  //拐点消失
-        {
-					 beep_on();
-//          my_island.state1_count+=my_control.encoderr;
-//          // Monotonicity_Change_Right(70,10);//找角点
-//           my_island.monotonicity_change_line[1]=my_image.Left_Line[my_island.monotonicity_change_line[0]];//角点的行列
-//        //   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
-//					if(my_island.state1_count>=10000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
-//            {   
-//							 my_order.beep_count=0;
-//                my_island.island_state =2;
-//							  my_island.state2_count=0;
-//            }//5000
-        }
-//		if(my_island.island_state==2)
-//		{
-//			   beep_on();
-//			  my_island.state2_count+=my_control.encoderr;   
-//		    // my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-//		     if(my_island.state2_count>=15000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
-//            {
-//							   my_order.beep_count=0;
-//                my_island.island_state =3;
-//							  my_island.state3_count=0;
-//            }	//130000  
-//		}
-//   	if(my_island.island_state==3)//拉环
-//		{
-//			  beep_on();
-//			  my_island.state3_count+=my_control.encoderr;   
-//					if(my_island.state3_count>=18000)
-//					{
-//						 my_order.beep_count=0;
-//					   my_island.island_state =4;
-//					   my_island.state4_count=0;
-//					
-//					}
+					if(my_island.island_state==3)//拉环
+					{
+							beep_on();
+							my_island.state3_count+=my_control.encoderl;   
+								if(my_island.state3_count>=18000)
+								{
+									 my_order.beep_count=0;
+									 my_island.island_state =4;
+									 my_island.state4_count=0;
+								
+								}
 
-//    }	
-//   if(my_island.island_state==4)//内部
-//		{		
-//			  beep_on();
-//      	  my_island.state4_count+=my_control.encoderr;   
-//					if(my_island.state4_count>5000)
-//					{
-//					   my_island.island_state =5;
-//					   my_island.state5_count=0;
-//					
-//					}
+					}	
+				 if(my_island.island_state==4)//内部
+					{		
+							beep_on();
+								my_island.state4_count+=my_control.encoderl;   
+								if(my_island.state4_count>5000)
+								{
+									 my_island.island_state =5;
+									 my_island.state5_count=0;
+								
+								}
 
-//		}
-//		 if(my_island.island_state==5)//拉环
-//		{		
-//			   beep_on();
-//      	  my_island.state5_count+=my_control.encoderr;   
-//					if(my_island.state5_count>=20000)
-//					{
-//					   my_island.island_state =6;
-//					
-//					}
+					}
+					 if(my_island.island_state==5)//拉环
+					{		
+							 beep_on();
+								my_island.state5_count+=my_control.encoderl;   
+								if(my_island.state5_count>=20000)
+								{
+									 my_island.island_state =6;
+								
+								}
 
-//		}
-//				
-//		 
-  }
+					}
+					
+			/////////////////////////////////////////////////////////
+				//左环
+			//  if(my_island.island_state==0)//此时是状态零,判断为左右丢线，左右连续性，搜索停止行，判断拐点，有拐点
+			//	{
+			//	 //  Continuity_Change_Right(MT9V03X_H-1-5,10);
+			//   //  Continuity_Change_Left(MT9V03X_H-1-5,10);
+			//	 //  Monotonicity_Change_Right(MT9V03X_H-1-5,10);//搜索行，可以适当调近  //找到右下拐点，算是进入状态一
+			//		 if(       
+			//			         my_image.continuity_change_flag_right<=5&& //右边不连续
+			//		           my_image.continuity_change_flag_left>=20&&   //左边连续
+			//               my_image.Left_Lost_Counter>=20&&           //右丢线多
+			//               my_image.Left_Lost_Counter<=50&&           //右丢线不能太多
+			//               my_image.Right_Lost_Counter<=5&&            //左丢线少
+			//               my_image.Search_Stop_Line>=79&& //搜索截止行看到很远
+			//               my_image.Boundry_Start_Right>=MT9V03X_H-20&&my_image.Boundry_Start_Left>=MT9V03X_H-20&& //边界起始点靠下
+			//               my_image.Both_Lost_Counter<=10)  
+			//            {
+			//              //  Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+			////                if(my_island.right_down_line[0]>=20)//条件1很松，在这里加判拐点，位置不对，则是误判，跳出
+			////                {
+			//                    my_island.island_state=1;//进入状态一
+			//									  my_island.state1_count=0;
+			//									  my_order.beep_count=0;
+			////                }//进入之后开始
+			////                else
+			////                {
+			////                    my_island.island_state=0;
+			////                }
+			//            }
+			//					}
+			//						//单调点12-60
+			//	   if(my_island.island_state==1)  //拐点消失
+			//        {
+			//					 beep_on();
+			////          my_island.state1_count+=my_control.encoderr;
+			////          // Monotonicity_Change_Right(70,10);//找角点
+			////           my_island.monotonicity_change_line[1]=my_image.Left_Line[my_island.monotonicity_change_line[0]];//角点的行列
+			////        //   Right_Add_Line((int)(MT9V03X_W-1-(my_island.monotonicity_change_line[1]*0.15)),MT9V03X_H-1,my_island.monotonicity_change_line[1],my_island.monotonicity_change_line[0]);//直接拉边界线
+			////					if(my_island.state1_count>=10000&& my_island.monotonicity_change_line[0]>=20 && my_island.monotonicity_change_line[0]<=60 && my_island.right_down_line[0]>=76)//找到的单调点过于向下，开始进入
+			////            {   
+			////							 my_order.beep_count=0;
+			////                my_island.island_state =2;
+			////							  my_island.state2_count=0;
+			////            }//5000
+			//        }
+			////		if(my_island.island_state==2)
+			////		{
+			////			   beep_on();
+			////			  my_island.state2_count+=my_control.encoderr;   
+			////		    // my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
+			////		     if(my_island.state2_count>=15000)// && my_island.monotonicity_change_line[0]>=60) //找到的单调点过于向下，开始进入
+			////            {
+			////							   my_order.beep_count=0;
+			////                my_island.island_state =3;
+			////							  my_island.state3_count=0;
+			////            }	//130000  
+			////		}
+			////   	if(my_island.island_state==3)//拉环
+			////		{
+			////			  beep_on();
+			////			  my_island.state3_count+=my_control.encoderr;   
+			////					if(my_island.state3_count>=18000)
+			////					{
+			////						 my_order.beep_count=0;
+			////					   my_island.island_state =4;
+			////					   my_island.state4_count=0;
+			////					
+			////					}
+
+			////    }	
+			////   if(my_island.island_state==4)//内部
+			////		{		
+			////			  beep_on();
+			////      	  my_island.state4_count+=my_control.encoderr;   
+			////					if(my_island.state4_count>5000)
+			////					{
+			////					   my_island.island_state =5;
+			////					   my_island.state5_count=0;
+			////					
+			////					}
+
+			////		}
+			////		 if(my_island.island_state==5)//拉环
+			////		{		
+			////			   beep_on();
+			////      	  my_island.state5_count+=my_control.encoderr;   
+			////					if(my_island.state5_count>=20000)
+			////					{
+			////					   my_island.island_state =6;
+			////					
+			////					}
+
+			////		}
+			////				
+			////	
+    }
+}
 
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     左下角点检测

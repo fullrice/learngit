@@ -1,22 +1,48 @@
 #include "image.h"
+#include "menu.h"
 #include "control.h"
 #include <math.h> 
 
 // 定义并初始化全局的结构体变量 my_image
 Image my_image = {0};
 //标准赛宽，将车子放在长直道上面实测，以下数值仅供参考
-int Standard_Road_Wide[80] = {
-    // 第一行（前10个数据保持不变）
-    31, 32, 33, 35, 36, 38, 39, 40, 41, 43,
+//int Standard_Road_Wide[80] = {
+//    // 第一行（前10个数据保持不变）
+//    31, 32, 33, 35, 36, 38, 39, 40, 41, 43,
 
-    // 后续行（每行第一个数据保持不变，其余按合理步长递增）
-    44, 45, 46, 47, 48, 49, 50, 51, 52, 53,  // 第一列：44（不变），后续+1
-    56, 57, 58, 59, 60, 61, 62, 63, 64, 65,  // 第一列：56（不变），后续+1
-    69, 70, 71, 72, 73, 74, 75, 76, 77, 78,  // 第一列：69（不变），后续+1
-    82, 83, 84, 85, 86, 87, 88, 89, 90, 91,  // 第一列：82（不变），后续+1
-    94, 95, 96, 97, 98, 99, 100, 101, 102, 103, // 第一列：94（不变），后续+1
-    107, 108, 109, 110, 111, 112, 113, 114, 115, 116, // 第一列：107（不变），后续+1
-    120, 121, 122, 123, 124, 125, 126, 127, 128, 129  // 第一列：120（不变），后续+1
+//    // 后续行（每行第一个数据保持不变，其余按合理步长递增）
+//    44, 45, 46, 47, 48, 49, 50, 51, 52, 53,  // 第一列：44（不变），后续+1
+//    56, 57, 58, 59, 60, 61, 62, 63, 64, 65,  // 第一列：56（不变），后续+1
+//    69, 70, 71, 72, 73, 74, 75, 76, 77, 78,  // 第一列：69（不变），后续+1
+//    82, 83, 84, 85, 86, 87, 88, 89, 90, 91,  // 第一列：82（不变），后续+1
+//    94, 95, 96, 97, 98, 99, 100, 101, 102, 103, // 第一列：94（不变），后续+1
+//    107, 108, 109, 110, 111, 112, 113, 114, 115, 116, // 第一列：107（不变），后续+1
+//    120, 121, 122, 123, 124, 125, 126, 127, 128, 129  // 第一列：120（不变），后续+1
+//};
+int Standard_Road_Wide[80] = {
+    // 0-9（前10个保持不变）
+    25, 32, 33, 35, 36, 38, 39, 40, 41, 43,
+
+    // 10-19（索引10为39，后续+1递增）
+    39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+
+    // 20-29（索引20为52，后续+1递增）
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61,
+
+    // 30-39（索引30为66，后续+1递增）
+    66, 67, 68, 69, 70, 71, 72, 73, 74, 75,
+
+    // 40-49（索引40为80，后续+1递增）
+    80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
+
+    // 50-59（索引50为94，后续+1递增）
+    94, 95, 96, 97, 98, 99, 100, 101, 102, 103,
+
+    // 60-69（索引60为107，后续+1递增）
+    107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
+
+    // 70-79（索引70为121，索引79为133，中间递增过渡）
+    121, 122, 123, 124, 125, 126, 127, 128, 131, 133
 };
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     图像二值化处理函数
@@ -120,8 +146,86 @@ int My_Adapt_Threshold(uint8* image, uint16 width, uint16 height)   //大津算�
         threshold = 0;
     return threshold;
 }
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     多峰阈值法处理（双阈值大津法）
+  @param     image       输入图像数组
+             width       图像宽度
+             height      图像高度
+             output      输出图像数组（需提前分配内存）
+  @return    0:成功 -1:失败
+  @note      执行流程：
+             1. 计算第一个阈值t1，将<=t1的灰度设为t1
+             2. 基于新图像计算第二个阈值t2，将<=t2设为0，>t2设为255
+-------------------------------------------------------------------------------------------------------------------*/
+//int Multi_Peak_Threshold_MT9V03X(image[][])
+//{
+
+//    // 步骤1：计算第一个阈值t1（将二维数组首地址转为一维指针传入）
+//    int t1 = My_Adapt_Threshold((uint8 *)image, MT9V03X_W, MT9V03X_H);
+// //    lcd_showint(120,180       ,t1 , 5);
+//    // 分配临时图像内存（一维数组模拟二维，按行优先存储）
+//    uint8* tempImage = (uint8*)malloc(MT9V03X_H * MT9V03X_W * sizeof(uint8));
+
+//    // 第一步处理：将<=t1的灰度值设为t1，其余保持不变
+//    for (int i = 0; i < MT9V03X_H; i++)  // 行循环
+//    {
+//        for (int j = 0; j < MT9V03X_W; j++)  // 列循环
+//        {
+//            // 计算临时图像的一维索引（i行j列对应一维索引：i*宽度 + j）
+//            int index = i * MT9V03X_W + j;
+//            tempImage[index] = (image[i][j] <= t1) ? t1 : image[i][j];
+//        }
+//    }
+
+//    // 步骤2：基于临时图像计算第二个阈值t2
+//    int t2 = My_Adapt_Threshold(tempImage, MT9V03X_W, MT9V03X_H);
+
+//    // 第二步处理：将<=t2的设为0，>t2的设为255，结果存入my_image.image_two_value
+//    for (int i = 0; i < MT9V03X_H; i++)  // 行循环
+//    {
+//        for (int j = 0; j < MT9V03X_W; j++)  // 列循环
+//        {
+//            int index = i * MT9V03X_W + j;
+//            my_image->image_two_value[i][j] = (tempImage[index] <= t2) ? 0 : 255;
+//        }
+//    }
+
+//    // 释放临时内存
+//    free(tempImage);
+//    return 0;
+//}
+#define threshold_max	255*5//此参数可根据自己的需求调节
+#define threshold_min	255*2//此参数可根据自己的需求调节
+void image_filter(uint8(*bin_image)[MT9V03X_W])//形态学滤波，简单来说就是膨胀和腐蚀的思想
+{
+	uint16 i, j;
+	uint32 num = 0;
 
 
+	for (i = 1; i < MT9V03X_H - 1; i++)
+	{
+		for (j = 1; j < (MT9V03X_W - 1); j++)
+		{
+			//统计八个方向的像素值
+			num =
+				bin_image[i - 1][j - 1] + bin_image[i - 1][j] + bin_image[i - 1][j + 1]
+				+ bin_image[i][j - 1] + bin_image[i][j + 1]
+				+ bin_image[i + 1][j - 1] + bin_image[i + 1][j] + bin_image[i + 1][j + 1];
+
+
+			if (num >= threshold_max && bin_image[i][j] == 0)
+			{
+				bin_image[i][j] = 255;//白  可以搞成宏定义，方便更改
+
+			}
+			if (num <= threshold_min && bin_image[i][j] == 255)
+			{
+				bin_image[i][j] = 0;//黑
+			}
+		}
+	}
+
+}
 
 /*-------------------------------------------------------------------------------------------------------------------
   @brief      图像二值化处理函数（支持自定义输入/输出图像和阈值）
@@ -287,8 +391,11 @@ void Longest_White_Column()//最长白列巡线
 					
         }
     }    
-    
-    // 设置搜索截止行
+     my_image.left_stable_range[0]= my_image.Longest_White_Column_Left[1]+20;
+		 my_image.left_stable_range[1]= my_image.Longest_White_Column_Left[1]-20;
+     my_image.right_stable_range[0]=my_image.Longest_White_Column_Right[1]+20;
+		 my_image.right_stable_range[1]=my_image.Longest_White_Column_Right[0]-20;
+		// 设置搜索截止行
     my_image.Search_Stop_Line = my_image.Longest_White_Column_Left[0];
     if(my_island.island_state==3)
 		{
@@ -301,7 +408,8 @@ void Longest_White_Column()//最长白列巡线
         int left_border = 0, right_border = 0;
         
         // 寻找右边界
-        for (j = my_image.Longest_White_Column_Right[1]; j <= MT9V03X_W - 1 - 2; j++)
+//        for (j = my_image.Longest_White_Column_Right[1]; j <= MT9V03X_W - 1 - 2; j++)
+			    for (j = my_image.Longest_White_Column_Right[1]; j <= MT9V03X_W - 1 - 2; j++)
         {
             if (my_image.image_two_value[i][j] == IMG_WHITE && 
                 my_image.image_two_value[i][j + 1] == IMG_BLACK && 
@@ -320,7 +428,8 @@ void Longest_White_Column()//最长白列巡线
         }
         
         // 寻找左边界
-        for (j = my_image.Longest_White_Column_Left[1]; j >= 0 + 2; j--)
+//        for (j = my_image.Longest_White_Column_Left[1]; j >= 0 + 2; j--)
+        for (j = my_image.Longest_White_Column_Left[1]; j >= 0 + 2 ; j--)
         {
             if (my_image.image_two_value[i][j] == IMG_WHITE && 
                 my_image.image_two_value[i][j - 1] == IMG_BLACK && 
