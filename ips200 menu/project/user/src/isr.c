@@ -76,10 +76,30 @@ void TIM2_IRQHandler (void)
 //    //  PDD_location(1);
 //		Motor_Left(my_control.pwm_l-my_pdd.steer_output);
 //		Motor_Right(my_control.pwm_r+my_pdd.steer_output);
+	//    my_order.count_2s++;
+//	   if(my_order.count_2s>=100 && my_order.go==1)
+//		 {
+//		    my_order.go=2;		 
+// 		 }
+//		 if(my_order.go==2)
+//		 {
+//		    my_control.P_SPEED=50;
+//			  my_control.I_SPEED=3;
+//		 }
+//		 else if(my_order.go==1)
+//		 {
+//		    my_control.P_SPEED=40;
+//			  my_control.I_SPEED=2;
+//		 }
 	 my_control.encoderl=encoder_get_count(TIM3_ENCODER);
 	   encoder_clear_count(TIM3_ENCODER);
 	   my_control.encoderr=-encoder_get_count(TIM4_ENCODER);
 	   encoder_clear_count(TIM4_ENCODER);
+//							  	PID2_SPEED((my_control.encoderl + my_control.encoderr)/2, my_control.Speed_Right_Set);
+//					//		pid_single_r(my_control.encoderr, my_control.Speed_Right_Set);
+//					//		pid_single_l(my_control.encoderl, my_control.Speed_Right_Set);
+//							Motor_Left(my_control.pwm_l - my_pdd.steer_output);
+//							Motor_Right(my_control.pwm_r + my_pdd.steer_output);
 	//      PID2_SPEED((my_control.encoderl+my_control.encoderr)/2,my_control.Speed_Right_Set);
 //    //   PID_DIR(2.2);	
          PDD_location(1);
@@ -102,12 +122,6 @@ void TIM2_IRQHandler (void)
 			{
 			   my_order.go=0;
 			//	my_order.black=0;
-			}
-			else
-			{
-			//   my_order.go=1;
-			//	my_order.black=0;
-			
 			}
 		//Zebra_Detect();		
 	 //蜂鸣器
@@ -134,8 +148,8 @@ void TIM2_IRQHandler (void)
 //									} else {
 											// 缓冲结束后设置速度
 					//						my_control.Speed_Right_Set = my_control.Speed_Left_Set;
-											my_control.Speed_Right_Set = my_control.Speed_Left_Set*1.5    ;
-
+											my_control.Speed_Right_Set = my_control.Speed_Left_Set*my_pdd.k_speed    ;
+                     
 //									}
 							} 
 							else // 弯道条件
@@ -152,20 +166,34 @@ void TIM2_IRQHandler (void)
 											my_control.Speed_Right_Set = my_control.Speed_Left_Set    ;
 //									}
 							}
-
+              if( my_order.ramp == 1)
+							{
+							   	my_control.Speed_Right_Set = my_control.Speed_Left_Set*0.8     ;
+							
+							}
+							else if(my_island.island_state!=0)
+							{
+								  if(my_island.detect==2)
+									{
+							      my_control.Speed_Right_Set = my_control.Speed_Left_Set*0.8;  
+									}										
+							}
 							// 公共控制逻辑（直道/弯道共用）
 						  	PID2_SPEED((my_control.encoderl + my_control.encoderr)/2, my_control.Speed_Right_Set);
 					//		pid_single_r(my_control.encoderr, my_control.Speed_Right_Set);
 					//		pid_single_l(my_control.encoderl, my_control.Speed_Right_Set);
-							Motor_Left(my_control.pwm_l - my_pdd.steer_output);
-							Motor_Right(my_control.pwm_r + my_pdd.steer_output);
+//							Motor_Left(my_control.pwm_l - my_pdd.steer_output);
+//							Motor_Right(my_control.pwm_r + my_pdd.steer_output);
+							Motor_Left(my_control.pwm_l + my_pdd.steer_output);
+							Motor_Right(my_control.pwm_r - my_pdd.steer_output);
+
 					} 
 					else // 停车条件
 					{
 							Motor_Right(0);
 							Motor_Left(0);
 					}	
-
+     
     // 此处编写用户代码
     TIM2->SR &= ~TIM2->SR;                                                      // 清空中断状态
 }
@@ -214,12 +242,15 @@ void TIM6_IRQHandler (void)
 {
     // 此处编写用户代码
 //     开始的加速
- //    my_order.count_2s++;
-//	   if(my_order.count_2s>=100 && my_order.go==1)
-//		 {
-//		    my_order.go=2;		 
-//		 }
-				 imu660ra_get_gyro(); 
+    // 获取陀螺仪数据
+    imu660ra_get_gyro();
+
+    // 转换为角速度（°/s），并减去零偏
+    float gyro_x_dps = (float)imu660ra_gyro_x / imu660ra_transition_factor[1] ;
+
+    // 积分计算角度（dt = 0.001s，因为中断是1ms一次）
+    my_island.gyro_x_angle += gyro_x_dps * 0.001;
+//	imu660ra_get_gyro(); 
 
 //	   if(my_order.count_2s>=0 && my_order.count_2s<=50)//1s
 //					{
@@ -334,18 +365,30 @@ void TIM7_IRQHandler (void)
 //			标志的检测位
 				// Zebra_Detect();
 	      // zebra(); 
+				if(my_order.zebra == 3)
+			 {
+			     my_order.go=0;
+				   Motor_Left(0);
+				   Motor_Right(0);
+			 }
         if(my_island.open==1)
 				{
-				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);
-         Continuity_Change_Left(30,MT9V03X_H-1-5-5);
-				 Monotonicity_Change_Right(10,70);
-				 Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
-				 Find_Left_Down_Point(MT9V03X_H-1,20);//找四个角点，返回值是角点所在的行数
-				 my_island.monotonicity_change_line[1]=my_image.Right_Line[my_island.monotonicity_change_line[0]];//角点的行列
-				 island_detect(); 
+//				 Continuity_Change_Right(30,MT9V03X_H-1-5-5);
+//         Continuity_Change_Left(30,MT9V03X_H-1-5-5);
+////				 Monotonicity_Change_Right(10,70);
+//					 Monotonicity_Change_Left(10,70);
+//		//			Find_Left_Down_Point(0,MT9V03X_H-1);
+//		//		 Find_Right_Down_Point(MT9V03X_H-1,20);//右下点
+//				  Find_Left_Down_Point(MT9V03X_H-1,20);//找四个角点，返回值是角点所在的行数
+//					Find_Up_Point( MT9V03X_H-1, 0 );	
+////				 my_island.monotonicity_change_line_right[1]=my_image.Right_Line[my_island.monotonicity_change_line_right[0]];//角点的行列
+//							my_island.monotonicity_change_line_left[1]=my_image.Left_Line[my_island.monotonicity_change_line_left[0]];//角点的行列
+          		//		island_detect_left();
+
+
 				}
 //     此处编写用户代码
-    TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
+    TIM7->SR &= ~TIM7->SR;                                                         // 清空中断状态
 }
 
 //-------------------------------------------------------------------------------------------------------------------

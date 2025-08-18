@@ -126,7 +126,7 @@ control my_control = {
 	  .encoderr=0,//1400
     .steer_output=0,
 	  .speed_err=0,
-	  .front
+	  .front   
 	=27        ,
 	  .max_encoderr=0,
 		.max_encoderl=0,
@@ -150,14 +150,14 @@ void Motor_Right(int pwm_R)
     if(pwm_R<=0)
    {
 		    //  gpio_set_level(DIR_L, GPIO_LOW);  //凡
-        //      gpio_set_level(DIR_R, GPIO_HIGH);                                      // DIR输出高电平
-		       gpio_set_level(DIR_R,GPIO_LOW);    
+              gpio_set_level(DIR_R, GPIO_HIGH);                                      // DIR输出高电平
+		    //   gpio_set_level(DIR_R,GPIO_LOW);    
             pwm_set_duty(PWM_R, -pwm_R );                   // 计算占空比
    }
   else
    {
-          gpio_set_level(DIR_R, GPIO_HIGH);   //凡
-		     //  gpio_set_level(DIR_R, GPIO_LOW);                                   // DIR输出低电平
+         // gpio_set_level(DIR_R, GPIO_HIGH);   //凡
+		       gpio_set_level(DIR_R, GPIO_LOW);                                   // DIR输出低电平
             pwm_set_duty(PWM_R, pwm_R);                // 计算占空比
    }
 }
@@ -176,13 +176,13 @@ void Motor_Left(int pwm_L)
     if(pwm_L>=0)
    {
 		         gpio_set_level(DIR_L, GPIO_HIGH);    //凡                               // DIR输出高电平
-           //  gpio_set_level(DIR_L, GPIO_LOW);                                  // DIR输出高电平
+          //   gpio_set_level(DIR_L, GPIO_LOW);                                  // DIR输出高电平
             pwm_set_duty(PWM_L, pwm_L );                   // 计算占空比  映射
    }
   else
    {
 		  gpio_set_level(DIR_L, GPIO_LOW);  //凡
-		// gpio_set_level(DIR_L, GPIO_HIGH);  
+	//	 gpio_set_level(DIR_L, GPIO_HIGH);  
                                         // DIR输出低电平
             pwm_set_duty(PWM_L, -pwm_L);                // 计算占空比
    }
@@ -229,43 +229,125 @@ float err_sum_average(uint8 start_point,uint8 end_point)
 //						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])>>1));//位操作等效除以2
 //				}
 		//双边
-			if(my_island.island_state==0 || my_island.island_state==4 || my_island.island_state==6)
-		{
-			//双边
-			  float k_err=0;
-				for(int i=start_point;i<end_point;i++)
-				{   
-//					if(my_image.Left_Line[i] < my_image.left_stable_range[1] || my_image.Left_Line[i] > my_image.left_stable_range[0] ||
-//						 my_image.Right_Line[i] < my_image.right_stable_range[1] || my_image.Right_Line[i] > my_image.right_stable_range[0])
-//					{							 
-//							k_err=1.3;
-//					} else 
-//					{
-//							k_err=1;
-//					}
-						err+=(MT9V03X_W/2-((my_image.Left_Line[i]+my_image.Right_Line[i])/2  ));//位操作等效除以2 1.9  
-				}
-		}
-		else if(my_island.island_state==1 || my_island.island_state==2 )
-		{
-				//单边
-
+		//左圆环
+						if(my_island.island_state==0 || my_island.island_state==5 )
+				{
+					//双边
 						for(int i=start_point;i<end_point;i++)
-						{
-							err+=(MT9V03X_W/1.8-Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  
-           //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+						{   
+
+								err+=(MT9V03X_W/2 - ((my_image.Left_Line[i]+my_image.Right_Line[i])/2  ));//位操作等效除以2 1.9  
 						}
-	   }
-		else if(my_island.island_state==3 || my_island.island_state==5)
-		{
-		   for(int i=start_point;i<end_point;i++)
+				}
+		     if(my_island.detect==1)
+				{
+				    		if( my_island.island_state==3 )
+								{
+										//单边
+
+												for(int i=start_point;i<end_point;i++)
+												{
+													err+=(MT9V03X_W/2 -Standard_Road_Wide[i]/2-my_image.Left_Line[i]-20  );//左  -20
+											 //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+												}
+
+								 }
+								if(my_island.island_state==1  || my_island.island_state==2  || my_island.island_state==4)
+								{
+												for(int i=start_point;i<end_point;i++)
+												{
+														err += ( (MT9V03X_W/2 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+												}
+								}
+				}
+				else if (my_island.detect==2)
+				{
+						if( my_island.island_state==3 )
 						{
-								err += ( (MT9V03X_W/1.8 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
-				 //   err += ( my_image.Left_Line[i] - (MT9V03X_W/2 - Standard_Road_Wide[i]/2) );
-						}	
-		}
+								//单边
+
+										for(int i=start_point;i<end_point;i++)
+										{
+											err += ( (MT9V03X_W/2 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i]+20);
+									 //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+										}
+
+						 }
+						if(my_island.island_state==1  || my_island.island_state==2  || my_island.island_state==4)
+						{
+										for(int i=start_point;i<end_point;i++)
+										{
+												err+=(MT9V03X_W/2 -Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  -20
+
+										}
+						}
+				}
+//			if(my_island.island_state==0 || my_island.island_state==5 )
+//		{
+//			//双边
+//				for(int i=start_point;i<end_point;i++)
+//				{   
+
+//						err+=(MT9V03X_W/2 - ((my_image.Left_Line[i]+my_image.Right_Line[i])/2  ));//位操作等效除以2 1.9  
+//				}
+//		}
+//		if( my_island.island_state==3 )
+//		{
+//				//单边
+
+//						for(int i=start_point;i<end_point;i++)
+//						{
+//							err+=(MT9V03X_W/2 -Standard_Road_Wide[i]/2-my_image.Left_Line[i]-20  );//左  -20
+//           //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+//						}
+
+//	   }
+//		if(my_island.island_state==1  || my_island.island_state==2  || my_island.island_state==4)
+//		{
+//		        for(int i=start_point;i<end_point;i++)
+//						{
+//								err += ( (MT9V03X_W/2 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i] );
+//						}
+//		}
+		//右圆环
+//		
+//				if(my_island.island_state==0 || my_island.island_state==5 )
+//				{
+//					//双边
+//						for(int i=start_point;i<end_point;i++)
+//						{   
+
+//								err+=(MT9V03X_W/2 - ((my_image.Left_Line[i]+my_image.Right_Line[i])/2  ));//位操作等效除以2 1.9  
+//						}
+//				}
+//					if( my_island.island_state==3 )
+//					{
+//							//单边
+
+//									for(int i=start_point;i<end_point;i++)
+//									{
+//										err += ( (MT9V03X_W/2 + Standard_Road_Wide[i]/2) - my_image.Right_Line[i]+20);
+//								 //     err += (my_image.Right_Line[i] - (MT9V03X_W /2 + Standard_Road_Wide[i] / 2)); // 右巡线
+//									}
+
+//					 }
+//					if(my_island.island_state==1  || my_island.island_state==2  || my_island.island_state==4)
+//					{
+//									for(int i=start_point;i<end_point;i++)
+//									{
+//									    err+=(MT9V03X_W/2 -Standard_Road_Wide[i]/2-my_image.Left_Line[i]);//左  -20
+
+//									}
+//					}
 		
-    my_control.front_err=(MT9V03X_W/2-((my_image.Left_Line[3]+my_image.Right_Line[3])/2));		
+		
+		
+		
+		
+		
+		
+		
+    my_control.front_err=(MT9V03X_W/2-((my_image.Left_Line[my_pdd.front_front]+my_image.Right_Line[my_pdd.front_front])/2));		
     err=err/(end_point-start_point);
     return err;
 }
@@ -789,7 +871,7 @@ void pid_single_r(float speed, int DesireSpeed)
 
 
 }
-float my_abs(float x) {
+float my_abs_float(float x) {
     return (x < 0) ? -x : x;
 }
 /*-------------------------------------------------------------------------------------------------------------------

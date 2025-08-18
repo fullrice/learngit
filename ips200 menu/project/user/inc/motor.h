@@ -51,7 +51,7 @@ void Motor_Left(int pwm_L);
 float Err_Sum(void);
 float err_sum_average(uint8 start_point,uint8 end_point);
 float Optimized_Err_Sum(void);
-float my_abs(float x);
+float my_abs_float(float x);
 float Fuzzy_P(int E,int EC);
 /*速度*/
 void CascadeControl(float speed_l, float speed_r,int DesireSpeed);

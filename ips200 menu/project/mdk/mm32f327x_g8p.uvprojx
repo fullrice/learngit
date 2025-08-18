@@ -438,6 +438,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\660.c</FilePath>
             </File>
+            <File>
+              <FileName>obstacle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\obstacle.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -482,6 +487,11 @@
               <FileName>660.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\660.h</FilePath>
+            </File>
+            <File>
+              <FileName>obstacle.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\obstacle.h</FilePath>
             </File>
           </Files>
         </Group>

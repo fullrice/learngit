@@ -738,24 +738,42 @@ void island_show()//22
 //	lcd_showint(100,90, my_image.Both_Lost_Counter, 5);
 //	lcd_showstr(0,90,"short_line");
 //	lcd_showint(100,90, my_image.shortest_White_Column_Left[1], 5);//列号
-	lcd_showstr(0,90,"sum");
-	lcd_showint(100,90, my_island.state1_count, 5);//列号
+//	lcd_showstr(0,90,"sum");
+//	lcd_showint(100,90, my_island.state1_count, 5);//列号
+	   lcd_showstr(0,90,"left_up");
+  	lcd_showint(100,90, my_image.Left_Up_Find, 5);//列号
 		//lcd_showstr(0,110,"left_start");
 	//lcd_showint(100,110, my_image.Boundry_Start_Left, 5);
-	lcd_showstr(0,110,"point");
-	lcd_showint(100,110, my_island.right_down_line[0], 5);//角点的行数
+//	lcd_showstr(0,110,"point");
+//	lcd_showint(100,110, my_island.right_down_line[0], 5);//
+			lcd_showstr(0,110,"left_con");  
+	  lcd_showint(100,110,my_image.Left_Line[my_image.Left_Up_Find], 5);//角点的行数
+
+//		lcd_showstr(0,110,"right_down");
+//	  lcd_showint(100,110,my_image.Right_Up_Find, 5);//角点的行数
 //	lcd_showstr(0,110,"speed");
 //	lcd_showint(100,110, my_control.encoderl, 5);//角点的行数
 //		lcd_showstr(0,130,"right_start");
 //	lcd_showint(100,130, my_image.Boundry_Start_Right, 5);
-			lcd_showstr(0,130,"err");
-	lcd_showint(100,130, my_control.err, 5);
-	 lcd_showstr(0,150,"left_contin");
-	lcd_showint(100,150, my_image.continuity_change_flag_left, 5);
-	 lcd_showstr(0,170,"right_contin");
-	lcd_showint(100,170, my_image.continuity_change_flag_right, 5);
-	lcd_showstr(0,190,"right_lost");
-	lcd_showint(100,190, my_image.Right_Lost_Counter, 5);
+//			lcd_showstr(0,130,"err");
+//	lcd_showint(100,130, my_control.err, 5);
+//			lcd_showstr(0,130,"cross");
+//	lcd_showint(100,130, my_order.cross, 5);
+   			lcd_showstr(0,130,"left_down");
+	lcd_showint(100,130,my_island.left_down_line[0],5);
+  //	 lcd_showstr(0,150,"right_down_line");
+//	lcd_showint(140,150, my_island.right_down_line[0], 5);
+//	 lcd_showstr(0,170,"right_down_con");
+//	lcd_showint(140,170,my_island.right_down_line[1], 5);
+	 lcd_showstr(0,150,"con_left");
+	lcd_showint(140,150, my_image.continuity_change_flag_left , 5);
+	 lcd_showstr(0,170,"con_right");
+	lcd_showint(140,170,my_image.continuity_change_flag_right, 5);
+
+//	lcd_showstr(0,190,"right_lost");
+//	lcd_showint(100,190, my_image.Right_Lost_Counter, 5);
+	lcd_showstr(0,190,"right_down");
+	lcd_showint(100,190, my_image.Right_Down_Find, 5);
 	lcd_showstr(0,210,"left_lost");
 	lcd_showint(100,210, my_image.Left_Lost_Counter, 5);
 		lcd_showstr(0,230,"sear_lost");
@@ -765,9 +783,14 @@ void island_show()//22
 	lcd_showstr(0,250,"island");
 	lcd_showint(100,250,my_island.island_state, 5);
 	lcd_showstr(0,270,"mon_line");
-	lcd_showint(100,270,my_island.monotonicity_change_line[0], 5);
-	lcd_showstr(0,290,"mon_con");
-	lcd_showint(100,290,my_island.monotonicity_change_line[1], 5);
+	lcd_showint(100,270,my_island.monotonicity_change_line_left[0], 5);
+//	lcd_showstr(0,270,"angle");
+//	lcd_showint(100,270,my_island.gyro_x_angle, 5);
+
+//	lcd_showstr(0,170,"mon_con");
+//	lcd_showint(100,170,my_island.monotonicity_change_line_left[1], 5);
+  lcd_showstr(0,290,"left_start");
+	lcd_showint(100,290,my_image.Boundry_Start_Left, 5);
 
  if(gpio_get_level(key_up)== 0)
     {

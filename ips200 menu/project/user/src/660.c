@@ -3,6 +3,7 @@
 #include "menu.h"
 #include "image.h"
 #include "control.h"
+#include "obstacle.h"
 #include <math.h>
 #include "isr.h"
 pdd my_pdd=
@@ -11,9 +12,12 @@ pdd my_pdd=
 	.D_DIRE=-1.5,   //-
 	.P_DIRE=-170    ,//130  -190
 	.steer_output=0,
-	.open=1
+	.open=1,
+	.front_front=3,
+	.k_speed=1.5
 };
-// 150  0.8(ad) -1.5(d) -190(p)  29(fro)  40(p_spe) 1.5(d_spe)   1.5倍
+// 150  0.8(ad) -1.5(d) -190(p)  29(fro)  40(p_spe) 1.5(d_spe)   1.
+//内切一号 150 0.8（ad） -1.5(d) -200(p) 23(front) 40(p_sp) 2(d_spe) 1.5 2    
 #define FLASH_SECTION_INDEX       (127)                                         // 存储数据用的扇区 倒数第一个扇区
 #define FLASH_PAGE_INDEX          (3)                                           // 存储数据用的页码 倒数第一个页码
 // PDD???????
@@ -105,6 +109,11 @@ void menu_save(void)
     flash_union_buffer[3].int16_type  = my_control.front;
     flash_union_buffer[4].float_type  = my_control.P_SPEED;  // 保存P_SPEED
     flash_union_buffer[5].float_type  = my_control.I_SPEED;  // 保存I_SPEED
+		
+		    // 添加新参数存储位置
+    flash_union_buffer[6].float_type  = my_control.Speed_Left_Set;
+    flash_union_buffer[7].float_type  = my_pdd.k_speed;
+    flash_union_buffer[8].float_type  = my_pdd.front_front;
     // 写入Flash（只保存菜单相关参数）
     flash_write_page_from_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);
 }
@@ -145,6 +154,10 @@ void menu_load(void)
     my_control.front = flash_union_buffer[3].int16_type;
     my_control.P_SPEED = flash_union_buffer[4].float_type;  // 加载P_SPEED
     my_control.I_SPEED = flash_union_buffer[5].float_type;  // 加载I_SPEED
+	
+	   my_control.Speed_Left_Set = flash_union_buffer[6].float_type;
+    my_pdd.k_speed = flash_union_buffer[7].float_type;
+    my_pdd.front_front = flash_union_buffer[8].float_type;
     flash_buffer_clear(); // 清空缓冲区，避免残留数据
 }
 void Camera_pdd_show()
@@ -164,27 +177,43 @@ void Camera_pdd_show()
     
 //    lcd_showstr(0,150,"D_DIRE");
 //    lcd_showfloat(100,150, my_pdd.D_DIRE, 5, 3);
-     lcd_showstr(0,150,"right");
-    lcd_showfloat(100,150, my_image.Right_Up_Find, 5, 3);
+//     lcd_showstr(0,150,"right");
+//    lcd_showfloat(100,150, my_image.Right_Up_Find, 5, 3);
+		     lcd_showstr(0,150,"obstacle");
+       lcd_showint(100,150, my_obstacle.state , 5);
 //    lcd_showstr(0,170,"steer_out");
 //    lcd_showfloat(100,170, my_pdd.steer_output, 5, 3);
-        lcd_showstr(0,170,"left");
-    lcd_showfloat(100,170, my_image.Left_Up_Find, 5, 3);
+//        lcd_showstr(0,170,"left");
+//    lcd_showfloat(100,170, my_image.Left_Up_Find, 5, 3);
+		        lcd_showstr(0,170,"ob_counter");
+    lcd_showint(100,170,my_obstacle.narrow_count , 5);
+
 
 	  lcd_showstr(0,190,"ERR");
     lcd_showint(100,190, my_control.err , 5);
 	
 	  lcd_showstr(0,210,"grox");
     lcd_showint(100,210,imu660ra_gyro_x , 5);
-    
-		lcd_showstr(0,230,"set_speed");  // ??????
-    lcd_showint(100,230, my_control.Speed_Right_Set , 5);
+//    
+//		lcd_showstr(0,230,"groy");  // ??????
+//    lcd_showint(100,230,imu660ra_gyro_y , 5);
+		    
+		lcd_showstr(0,230,"ramp");  // ??????
+    lcd_showint(100,230,my_order.ramp  , 5);
 		
-		lcd_showstr(0,250,"front");  // ??????
-    lcd_showint(100,250, my_control.front  , 5);
-		 
-		lcd_showstr(0,270,"stop");  // ??????
-    lcd_showint(100,270, my_image.Search_Stop_Line  , 5);
+		lcd_showstr(0,250,"island  ");  // ??????
+    lcd_showint(100,250,my_island.island_state  , 5);
+//		
+//		lcd_showstr(0,230,"set_speed");  // ??????
+//    lcd_showint(100,230, my_control.Speed_Left_Set , 5);
+//		
+//		lcd_showstr(0,250,"front");  // ??????
+//    lcd_showint(100,250, my_control.front  , 5);
+//		 
+//		lcd_showstr(0,270,"stop");  // ??????
+//    lcd_showint(100,270, my_image.Search_Stop_Line  , 5);
+       		lcd_showstr(0,270,"go");  // ??????
+    lcd_showint(100,270,my_order.go , 5);
 		
 				lcd_showstr(0, 290, "zebra");
     lcd_showint(100, 290       , my_order.zebra  , 5);
@@ -215,6 +244,8 @@ void Camera_pdd_show()
         my_order.go=1;             // ????
         my_order.show=0;           // ??????
 			my_order.zebra=0;
+			my_island.island_state=0;
+			my_order.ramp=0;    
       //  my_menu.menu_open=0;       // ????
         delay_ms(200);             // ????
         lcd_clear();               // ????
@@ -254,12 +285,12 @@ void sub_key_action()
         sub_arrow += 20;
     }
     
-    // 新增选项后，箭头范围调整为0~160（共9个选项，步长20）
+		  // 新增选项后，箭头范围调整为0~220（共11个选项，步长20）
     switch(sub_page)
     {
         case 1:  
-            if(sub_arrow < 0) sub_arrow = 160;    // 向上循环到最后一个选项（Back）
-            else if(sub_arrow > 160) sub_arrow = 0; // 向下循环到第一个选项
+            if(sub_arrow < 0) sub_arrow = 220;    // 向上循环到最后一个选项
+            else if(sub_arrow > 220) sub_arrow = 0; // 向下循环到第一个选项
             break;
         default:  
             sub_arrow = 0;
@@ -298,8 +329,14 @@ void pdd_sub_menu_main_page()
     lcd_showstr(20, 160, "Back");
 //		lcd_showstr(20, 180, "front_err");
 //    lcd_showint(120,180       , my_control.front_err  , 5);
-    		lcd_showstr(20, 180, "zebra");
-    lcd_showint(120,180       , my_order.zebra  , 5);
+    lcd_showstr(20, 180, "Speed_Set");
+    lcd_showint(120, 180, (int)my_control.Speed_Left_Set, 5);
+    lcd_showstr(20, 200, "k_speed");
+    lcd_showfloat(120, 200, my_pdd.k_speed, 5, 3);
+    lcd_showstr(20, 220, "front_front");
+     lcd_showint(120, 220, my_pdd.front_front, 5);
+//    		lcd_showstr(20, 180, "zebra");
+//    lcd_showint(120,180       , my_order.zebra  , 5);
 
     // 回车键逻辑（新增P_SPEED和I_SPEED的调整入口）
     if(gpio_get_level(key_enter) == 0)
@@ -316,7 +353,7 @@ void pdd_sub_menu_main_page()
             case 120: sub_page = 7; break;   // 新增：I_SPEED调整
             case 140:                        // Save
                 menu_save();
-                lcd_showstr(50, 80, "Params Saved!");
+                lcd_showstr(50, 80  , "Params Saved!");
                 delay_ms(1000);
                 lcd_clear();
                 sub_page = 1;
@@ -329,8 +366,126 @@ void pdd_sub_menu_main_page()
                 sub_page = 1;
                 break;
             case 180: sub_page = 0; break;   // Back
+						    // ... 原有选项保持不变 ...
+            case 200: sub_page = 11; break;  // Speed_Left_Set调整
+            case 220: sub_page = 12; break;  // k_speed调整
+            case 240: sub_page = 13; break;  // front_front调整
         }
         sub_arrow = 0;
+    }
+}
+// 新增三个参数的调整页面
+// 1. Speed_Left_Set调整页面（整数调整）
+void speed_left_set_adjust()
+{
+    lcd_showstr(0, 0, "Adjust Speed_Left_Set");
+    lcd_showstr(0, 30, "Value:");
+    lcd_showint(80, 30, (int)my_control.Speed_Left_Set, 5);
+    lcd_showstr(0, 60, "Up:+20  Down:-20");
+    lcd_showstr(0, 80, "Enter:+100  Return:Menu");
+    
+    if(gpio_get_level(key_up) == 0)
+    {
+        my_control.Speed_Left_Set += 10;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_down) == 0)
+    {
+        my_control.Speed_Left_Set -= 10;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_enter) == 0)
+    {
+        my_control.Speed_Left_Set += 100;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_return) == 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        sub_page = 1;  // 返回子菜单主页
+    }
+}
+
+// 2. k_speed调整页面（浮点数调整）
+void k_speed_adjust()
+{
+    lcd_showstr(0, 0, "Adjust k_speed");
+    lcd_showstr(0, 30, "Value:");
+    lcd_showfloat(80, 30, my_pdd.k_speed, 5, 3);
+    lcd_showstr(0, 60, "Up:+0.01  Down:-0.01");
+    lcd_showstr(0, 80, "Enter:+0.05  Return:Menu");
+    
+    if(gpio_get_level(key_up) == 0)
+    {
+        my_pdd.k_speed += 0.1;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_down) == 0)
+    {
+        my_pdd.k_speed -= 0.1;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_enter) == 0)
+    {
+        my_pdd.k_speed += 0.5;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_return) == 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        sub_page = 1;
+    }
+}
+
+// 3. front_front调整页面（浮点数调整）
+void front_front_adjust()
+{
+    lcd_showstr(0, 0, "Adjust front_front");
+    lcd_showstr(0, 30, "Value:");
+    lcd_showint(80, 30, my_pdd.front_front, 5);
+    lcd_showstr(0, 60, "Up:+0.005  Down:-0.005");
+    lcd_showstr(0, 80, "Enter:+0.02  Return:Menu");
+    
+    if(gpio_get_level(key_up) == 0)
+    {
+        my_pdd.front_front += 0.5;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_down) == 0)
+    {
+        my_pdd.front_front -= 0.5;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_enter) == 0)
+    {
+        my_pdd.front_front += 1;
+        delay_ms(200);
+        lcd_clear();
+    }
+    
+    if(gpio_get_level(key_return) == 0)
+    {
+        delay_ms(200);
+        lcd_clear();
+        sub_page = 1;
     }
 }
 // AD_DIRE adjustment page
@@ -482,6 +637,9 @@ void pdd_sub_menu_main()
             case 6: p_speed_adjust(); break;   // 新增：P_SPEED调整页面
             case 7: i_speed_adjust(); break;   // 新增：I_SPEED调整页面
             case 8: Camera_pdd_show();break;   // 保持原有Camera页面（若需要）
+					  case 11: speed_left_set_adjust(); break;
+            case 12: k_speed_adjust(); break;
+            case 13: front_front_adjust(); break;
         }
     }
     else

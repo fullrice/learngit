@@ -47,7 +47,7 @@ typedef struct
 		int start_x_r;
 		int start_y;
     // 标准赛道宽度（可根据实际需求初始化）
-    const uint8 Standard_Road_Wide[MT9V03X_H]; 
+   // const uint8 Standard_Road_Wide[MT9V03X_H]; 
 		
 		//十字
 		volatile int Cross_Flag;
@@ -58,13 +58,17 @@ typedef struct
 		volatile int cross_count;
 		volatile int continuity_change_flag_left;
 		volatile int continuity_change_flag_right;
+		
 } Image;
 
 // 声明全局的结构体变量
 extern Image my_image;
-extern int Standard_Road_Wide[MT9V03X_H];
+extern int Standard_Road_Wide[80];
+
 // 函数声明
 int My_Adapt_Threshold(uint8* image, uint16 width, uint16 height);
+int my_abs(int x);
+void L_duan_V();
 //int Multi_Peak_Threshold_MT9V03X(uint8* image);
 void Image_Binarization(int threshold);
 int Distributed_Otsu_Threshold(uint8 *image, uint16 width, uint16 height);

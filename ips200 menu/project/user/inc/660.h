@@ -7,7 +7,8 @@ typedef struct
 	 volatile float D_DIRE;
    volatile float steer_output;
    volatile  int open;
-
+   volatile  float k_speed;
+	volatile   int front_front;
 
 }pdd;
 
@@ -24,4 +25,8 @@ void pdd_p_dire_adjust(void);
 void front_adjust(void);
 void pdd_sub_menu_main(void);
 void start_pdd_sub_menu(void);
+// 新增参数调整函数声明
+void speed_left_set_adjust(void);
+void k_speed_adjust(void);
+void front_front_adjust(void);
 #endif

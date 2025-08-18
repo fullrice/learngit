@@ -19,6 +19,15 @@ Image my_image = {0};
 //    107, 108, 109, 110, 111, 112, 113, 114, 115, 116, // 第一列：107（不变），后续+1
 //    120, 121, 122, 123, 124, 125, 126, 127, 128, 129  // 第一列：120（不变），后续+1
 //};
+
+/**
+ * @brief 计算整数的绝对值
+ * @param x 输入整数
+ * @return 绝对值
+ */
+int my_abs(int x) {
+    return (x < 0) ? -x : x;
+}
 int Standard_Road_Wide[80] = {
     // 0-9（前10个保持不变）
     25, 32, 33, 35, 36, 38, 39, 40, 41, 43,
@@ -43,7 +52,7 @@ int Standard_Road_Wide[80] = {
 
     // 70-79（索引70为121，索引79为133，中间递增过渡）
     121, 122, 123, 124, 125, 126, 127, 128, 131, 133
-};
+};   
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     图像二值化处理函数
   @param     二值化阈值
@@ -397,10 +406,13 @@ void Longest_White_Column()//最长白列巡线
 		 my_image.right_stable_range[1]=my_image.Longest_White_Column_Right[0]-20;
 		// 设置搜索截止行
     my_image.Search_Stop_Line = my_image.Longest_White_Column_Left[0];
-    if(my_island.island_state==3)
+//    if(my_island.island_state==3 )
+//		{
+//			  my_image.Search_Stop_Line=70;  //110 70
+//		}
+		    if(my_island.island_state==3 )
 		{
-		  my_image.Longest_White_Column_Right[1]=140;
-		
+			  my_image.Search_Stop_Line=70;  //110 70
 		}
     // 常规巡线
     for (i = MT9V03X_H - 1; i >= MT9V03X_H - my_image.Search_Stop_Line; i--)
@@ -802,7 +814,19 @@ void Find_Down_Point(int start,int end)//从下到上
         }
     }
 }
+void L_duan_V(){
+	int i;
+	my_image.Left_Up_Find=0;
+ for (i = 115; i >40; i--)
+	{
+		if (my_abs(my_image.Left_Line[i]-my_image.Left_Line[i-1])<=4&&my_abs(my_image.Left_Line[i-1]-my_image.Left_Line[i-2])<=4&&
+        my_abs(my_image.Left_Line[i-2]-my_image.Left_Line[i-3])<=4&&((my_image.Left_Line[i]-my_image.Left_Line[i+2])>=3)&&
+        ((my_image.Left_Line[i]-my_image.Left_Line[i+3])>=7)&&((my_image.Left_Line[i]-my_image.Left_Line[i+4])>=7)){
+			   my_image.Left_Up_Find=i;//传递y坐标
+		}
+	}
 
+}
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     找上面的两个拐点，供十字使用
   @param     搜索的范围起点，终点
@@ -862,11 +886,11 @@ void Find_Up_Point(int start,int end)//从下到上扫线
             break;
         }
     }
-    if(abs(my_image.Right_Up_Find-my_image.Left_Up_Find)>=30)//纵向撕裂过大，视为误判
-    {
-        my_image.Right_Up_Find=0;
-        my_image.Left_Up_Find=0;
-    }
+//    if(abs(my_image.Right_Up_Find-my_image.Left_Up_Find)>=30)//纵向撕裂过大，视为误判
+//    {
+//        my_image.Right_Up_Find=0;
+//        my_image.Left_Up_Find=0;
+//    }
 }   
 /* 前进方向定义：
  *   0

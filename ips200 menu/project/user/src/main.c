@@ -38,6 +38,8 @@
 #include "control.h"
 #include "image.h"
 #include "660.h"
+#include "obstacle.h"
+
 #include "isr.h"
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
@@ -122,7 +124,7 @@ void all_init(void)
   //    pit_ms_init(TIM5_PIT, 10);//
 	    /*中断*/			
 	    pit_ms_init(TIM6_PIT, 1    );//陀螺仪
-			pit_ms_init(TIM7_PIT, 4);//标志位判断   //4
+			pit_ms_init(TIM7_PIT, 10  );//标志位判断   //4
 	 		pit_ms_init(TIM2_PIT, 5  			);//速度方向
       interrupt_set_priority(TIM6_IRQn, 3);
 			interrupt_set_priority(TIM7_IRQn, 2);
@@ -152,10 +154,10 @@ int main(void)
     while(1)
     {
         /* 图像处理与显示模块（调试时可启用） */
-    //       island_show();                    // 调试用：显示环岛检测信息（当前被注释）
+     //      island_show();                    // 调试用：显示环岛检测信息（当前被注释）
 		//		  ips200_show_gray_image(0, 0, (const uint8 *)my_image.image_two_value, MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0); 
 
-       //       Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
+         //     Camera_show();                    // 调试用：显示摄像头原始图像（当前被注释）
         // menu_sub();                       // 调试用：显示子菜单（当前被注释）
         // menu_main();                     // 调试用：显示主菜单（当前被注释）
         // show_test();                      // 调试用：测试显示（当前被注释）
@@ -164,7 +166,6 @@ int main(void)
         {
 //            // 计算自适应阈值（动态调整二值化阈值）
             Threshold = My_Adapt_Threshold((uint8 *)mt9v03x_image, MT9V03X_W, MT9V03X_H);
-            
             // 图像二值化处理（将灰度图转为黑白图）
             Image_Binarization(Threshold);//加大阈值来增加对应的图象值更让偏向黑色
             image_filter(my_image.image_two_value);
@@ -177,12 +178,88 @@ int main(void)
       //   island_show();   
         /* 赛道中线提取 */
         Longest_White_Column();              // 通过检测最长白列提取赛道中线
+		//		 Find_Down_Point( MT9V03X_H-1, 0 );
+			//	   Find_Up_Point( MT9V03X_H-20, 20 );	
+//				if(my_island.island_state==5)
+//				{
+//				      my_island.right_down_line[0]= my_image.Right_Down_Find;//40
+//              my_island.right_down_line[1]= my_image.Right_Line[my_island.right_down_line[0]];//120
+//							my_island.k = ((float)(my_island.right_down_line[1] - 80)) / 
+//														((float)(my_island.right_down_line[0] - 20));
+
+//							// 2. 从右下角点向上补线
+//							for(int i = my_island.right_down_line[0]; i > 5; i--) {
+//									// 正确的线性插值公式
+//									my_image.Right_Line[i] = my_island.right_down_line[1] + 
+//																					my_island.k * (i - my_island.right_down_line[0]);
+//									
+//									// 边界保护
+//									my_image.Right_Line[i] = (my_image.Right_Line[i] <= 1) ? 1 : 
+//																					((my_image.Right_Line[i] >= MT9V03X_W - 2) ? MT9V03X_W - 2 : my_image.Right_Line[i]);
+//							}
+////					          xieji_right(my_island.right_down_line[1], 0, my_island.right_down_line[0],   0);
+////					Right_Add_Line(my_island.right_down_line[1], 0, my_island.right_down_line[0],   0);
+////					draw_boundary_lines_wide();
+//	//			    xieji_right(90, my_island.right_down_line[1], 10,my_island.right_down_line[0]);
+
+//				}
+//										if(my_island.island_state == 3)
+//				{
+//						// 1. 获取左上拐点坐标（图像坐标系）
+//						my_island.Left_Up_Guai[0] = my_image.Left_Up_Find; // 行号y（向下增大）
+//						my_island.Left_Up_Guai[1] = my_image.Left_Line[my_island.Left_Up_Guai[0]]; // 列号x（向右增大）
+//						
+//						// 2. 设置目标点（右下角）
+//						int target_col = 179;   // 列号x（更靠右）
+//						int target_row = 79;    // 行号y（更靠下）
+//						
+//						// 3. 计算正确的斜率（Δx/Δy）
+//						if(my_island.Left_Up_Guai[0] != target_row) {
+//								// 注意：行号差是target_row - Left_Up_Guai[0]（向下为正）
+//								my_island.k = ((float)(target_col - my_island.Left_Up_Guai[1])) / 
+//														 ((float)(target_row - my_island.Left_Up_Guai[0]));
+//						} else {
+//								my_island.k = 0; // 水平线处理
+//						}
+
+//						// 4. 从拐点向下补线到目标行（注意循环方向改变）
+//						for(int i = my_island.Left_Up_Guai[0]; i <= target_row; i++) 
+//						{
+//								// 线性插值公式：x = x1 + k*(y-y1)
+//								int x = my_island.Left_Up_Guai[1] + 
+//											 (int)(my_island.k * (i - my_island.Left_Up_Guai[0]));
+//								
+//								// 边界保护
+//								if(x <= 1) {
+//										x = 1;
+//								} 
+//								else if(x >= MT9V03X_W - 2) {
+//										x = MT9V03X_W - 2;
+//								}
+//								
+//								my_image.Left_Line[i] = x;
+//						}
+//				}
 				Cross_Detect();
-				if(my_order.cross==1)
+			//	island_detect_left();   
+			  island_detect();
+        if(my_island.detect==1)
 				{
+				  island_detect_left();
+				}
+				else if (my_island.detect==2)
+				{
+				  island_detect_right();
+				}
+				// 
+		  	Ramp_Detect(); 
+			  obstacle_detect();  
+
+				if(my_order.cross==1 )
+	   			{
 				//   Lengthen_Left_Boundry(0,int end);
-					Lengthen_Left_Boundry(my_image.Left_Up_Find-1,MT9V03X_H-10);
-          Lengthen_Right_Boundry(my_image.Right_Up_Find-1,MT9V03X_H-10);				
+					 Lengthen_Left_Boundry(my_image.Left_Up_Find-1,MT9V03X_H-10);
+           Lengthen_Right_Boundry(my_image.Right_Up_Find-1,MT9V03X_H-10);				
 				}
   //        /* 环岛特殊处理（状态5：出环阶段） */
 //        if(my_island.island_state == 5)      // 检查是否处于环岛状态5
@@ -202,6 +279,16 @@ int main(void)
 ////			 }
 //        /* 控制误差计算 */
 //        // 计算30-36行图像的平均误差（用于方向控制）
+
+							// 直道条件判断
+//							if ((my_control.err <= 8 || my_control.err >= -8)&& my_image.Search_Stop_Line>=75) 
+//							{
+//								 my_control.front=25;
+//							} 
+//							else // 弯道条件
+//							{
+//								 my_control.front=20  ;
+//							}
           my_control.err = err_sum_average(my_control.front,my_control.front+7); 
 //          if(my_order.cross == 1)
 //					{
@@ -218,7 +305,9 @@ int main(void)
 //					}						
 		//			         Camera_pdd_show();
 	      //	  printf("\r\n %d,%d",my_control.Speed_Right_Set,(my_control.encoderl+my_control.encoderr)/2);
-            pdd_sub_menu_main();
+                      pdd_sub_menu_main();
+								//			obstacle_show();									
+			  //	             island_show();  
 		// show_test();
 			//	 Camera_pdd_show();
 ////					lcd_showstr(0,190,"ERR");
