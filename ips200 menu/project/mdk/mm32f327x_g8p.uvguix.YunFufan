@@ -3615,9 +3615,9 @@
       </Doc>
       <Doc>
         <Name>..\user\src\obstacle.c</Name>
-        <ColumnNumber>60</ColumnNumber>
+        <ColumnNumber>16</ColumnNumber>
         <TopLine>191</TopLine>
-        <CurrentLine>207</CurrentLine>
+        <CurrentLine>194</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
